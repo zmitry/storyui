@@ -1,10 +1,10 @@
 import React from "react";
 
-/*
-# Counter
-# With markdown
-write some doc
-*/
+/**
+ *
+ * # hello docs
+ * ## it's me
+ */
 export function Counter({
   value,
   onClick,

@@ -4,3 +4,4 @@ export * from "./markdownStyles";
 export * from "./Button";
 export * from "./Loader";
 export * from "./Icons";
+export * from "./IFrame";

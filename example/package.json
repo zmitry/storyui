@@ -12,12 +12,14 @@
     "@types/react-dom": "^16.9.0",
     "babel-plugin-react-docgen": "^4.1.0",
     "customize-cra": "^0.9.1",
+    "import-all.macro": "^3.0.0",
     "react": "^16.13.1",
     "react-app-rewired": "^2.1.5",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.1",
+    "storyui": "../",
     "typescript": "~3.7.2",
-    "storyui": "../"
+    "webpack-bundle-analyzer": "^3.6.1"
   },
   "scripts": {
     "start": "react-app-rewired start",

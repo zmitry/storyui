@@ -1,5 +1,5 @@
 import React from "react";
-import TextareaAutosize from "react-textarea-autosize";
+// import TextareaAutosize from "react-textarea-autosize";
 import { css, cx } from "emotion";
 
 type Props = Record<string, any> & {
@@ -71,14 +71,15 @@ export const Input = React.forwardRef(
   ({ className, type, helper, label, defaultValue, ...props }: Props, ref: any) => {
     let input = <input className={cx(classes.input, className)} type={type} {...props} />;
     if (type === "textarea") {
-      input = (
-        <TextareaAutosize
-          className={cx(classes.input, classes.textarea, className)}
-          type={type}
-          maxRows={8}
-          {...props}
-        />
-      );
+      // not implemented
+      // input = (
+      //   <TextareaAutosize
+      //     className={cx(classes.input, classes.textarea, className)}
+      //     type={type}
+      //     maxRows={8}
+      //     {...props}
+      //   />
+      // );
     } else if (type === "select") {
       input = <select ref={ref} className={cx(classes.input, className)} {...(props as any)} />;
     }

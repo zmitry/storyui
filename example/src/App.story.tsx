@@ -2,6 +2,7 @@ import React from "react";
 import App, { Header } from "./App";
 
 export default {
+  // it means show each story as separate option
   nest: true
 };
 

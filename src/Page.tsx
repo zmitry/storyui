@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import capitalize from "lodash/capitalize";
 import ErrorBoundary from "react-error-boundary";
-import omit from "lodash/omit";
-import { event } from "./event";
-import { Stack, Loader, OpenLinkIcon, EditIcon, IconButton, HStack } from "./components";
-import { Field } from "./components/Form";
 import { css } from "emotion";
+import { omit } from "./helpers";
+import { event } from "./event";
+import { Stack, Loader, OpenLinkIcon, EditIcon, IconButton, HStack, IFrame } from "./components";
+import { Field } from "./components/Form";
 import { Card } from "./components/Card";
 
 function isLowerCase(str) {
@@ -52,6 +52,7 @@ type Field = {
   label: string;
   update: (v: any) => void;
   key: string;
+  helper?: string;
 };
 
 function toProps(fields: Field[]) {
@@ -93,7 +94,7 @@ const classes = {
   `
 };
 
-export function Page({ Value, title }) {
+export function Page({ Value, title, framed }) {
   // const [targetRef, isInViewport] = useIsInViewport(20);
   const isInViewport = true;
   const args = Value.__docgenInfo?.props ? useArgs(Value.__docgenInfo) : null;
@@ -141,7 +142,15 @@ export function Page({ Value, title }) {
       <Stack gap={15}>
         {isInViewport ? (
           <>
-            <div style={{ background: "white", padding: 10 }}>
+            <div
+              style={{
+                background: "white",
+                padding: 10,
+                position: "relative",
+                maxHeight: "calc(100vh - 250px)",
+                overflow: "auto"
+              }}
+            >
               <ErrorBoundary
                 key={JSON.stringify(props)}
                 FallbackComponent={() => "error" as any}
@@ -150,7 +159,7 @@ export function Page({ Value, title }) {
                   return "err";
                 }}
               >
-                <Value {...props} />
+                {framed ? <IFrame page={title} /> : <Value {...props} />}
               </ErrorBoundary>
             </div>
           </>
@@ -170,24 +179,20 @@ function GetCases(imports) {
   }));
 }
 
-export function buildPages(reqCtx) {
-  const pages = reqCtx
-    .keys()
-    .map(fname => [fname, reqCtx(fname)])
-    .reduce((acc, [name, el]) => {
-      const config = el.default || {};
-      const stories = el.default?.stories ? el.default?.stories : omit(el, "default");
-      const nest = config.framed || config.nest;
-      const res = {
-        name: name,
-        nest: nest,
-        component: el.default?.component,
-        framed: config.framed,
-        config: config,
-        cases: GetCases(stories)
-      };
-      acc.push(res);
-      return acc;
-    }, []);
+export function buildPages(modules) {
+  const pages = Object.entries(modules).reduce((acc, [name, el]: any) => {
+    const config = el.default || {};
+    const stories = el.default?.stories ? el.default?.stories : omit(el, "default");
+    const res = {
+      name: name,
+      nest: config.nest,
+      component: el.default?.component,
+      framed: config.framed,
+      config: config,
+      cases: GetCases(stories)
+    };
+    acc.push(res);
+    return acc;
+  }, []);
   return pages;
 }

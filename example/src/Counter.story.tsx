@@ -5,7 +5,8 @@ export default {
   // export your component docs
   component: Counter,
   // add link to your design spec for component
-  figma: "https://figma,com"
+  figma: "https://figma,com",
+  framed: true
 };
 // props ui is automatically generated based on your function signature
 export function CounterStory({

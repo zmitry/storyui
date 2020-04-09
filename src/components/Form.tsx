@@ -21,6 +21,7 @@ export interface FieldProps {
   label: string;
   onChange: (v) => void;
   value: string;
+  helper?: string;
 
   onButtonClick?: () => void;
 }
@@ -41,11 +42,11 @@ export function Field(props: FieldProps) {
     case "date":
       return (
         <Input
+          helper={props.helper}
           label={props.label}
           type={props.type}
           value={props.value}
           onChange={v => {
-            console.log(v);
             return props.onChange(v.target.value);
           }}
         />
@@ -54,6 +55,7 @@ export function Field(props: FieldProps) {
     case "array":
       return (
         <Input
+          helper={props.helper}
           label={props.label}
           type={"textarea"}
           value={format(props.value)}
@@ -66,6 +68,7 @@ export function Field(props: FieldProps) {
 
   return (
     <Input
+      helper={props.helper}
       label={props.label}
       type={props.type}
       value={props.value}

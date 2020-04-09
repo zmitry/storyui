@@ -1,10 +1,10 @@
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { resolve } = require("path");
 const { isObject } = require("lodash");
-module.exports.addUiBook = ({
+module.exports.addStoryUiConfig = ({
   setupFilePath,
-  templatePath = resolve(__dirname, "./uibook.template.html"),
-  outputPath = "./uibook.html"
+  templatePath = resolve(__dirname, "./template.html"),
+  outputPath = "./storyui.html"
 }) => {
   return function(config, env) {
     const setup = [setupFilePath];
@@ -15,14 +15,15 @@ module.exports.addUiBook = ({
     if (isObject(config.entry)) {
       config.entry = {
         main: config.entry,
-        uibook: setup
+        storyui: setup
       };
     } else {
-      config.entry.uibook = setup;
+      config.entry.storyui = setup;
     }
     config.plugins.push(
       new HtmlWebpackPlugin({
-        chunks: ["uibook"],
+        inject: true,
+        chunks: ["storyui"],
         template: templatePath,
         filename: outputPath
       })

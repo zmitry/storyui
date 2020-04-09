@@ -12,5 +12,6 @@ export function event(name: string) {
     } else {
       document.body.dispatchEvent(event);
     }
+    console.log(`[${name}]`, args);
   };
 }

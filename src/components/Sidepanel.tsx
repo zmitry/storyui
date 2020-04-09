@@ -1,9 +1,54 @@
 import React, { useState } from "react";
+import { css, cx } from "emotion";
 import { HStack, Stack } from "./Layout";
 import { theme } from "../theme";
 import { ExpandIcon, FolderIcon, BurgerIcon, IconButton } from "./Icons";
 import { Text } from "./Text";
-import { css } from "emotion";
+
+const classes = {
+  item: css`
+    &:not(:first-of-type) {
+      margin-top: 15px;
+    }
+  `,
+  sidepanelEl: css`
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    height: 30px;
+  `,
+  sidepanelItem: css`
+    &::before {
+      content: "";
+      color: "red";
+      display: block;
+      position: absolute;
+    }
+
+    &.selected::before,
+    &:hover::before {
+      left: 0;
+      height: 100%;
+      width: 2px;
+      background: #2196f3;
+    }
+
+    &:hover,
+    &.selected {
+      position: relative;
+      background: rgb(221, 221, 221);
+    }
+
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    height: 30px;
+    font-family: ${theme.font};
+  `
+};
 
 type TextItem = {
   tag?: string;
@@ -30,13 +75,7 @@ export interface SidePanelProps {
 }
 function Icon({ children, ...rest }) {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      color={theme.iconPrimary}
-      {...rest}
-    >
+    <svg width="16" height="16" viewBox="0 0 24 24" color={theme.iconPrimary} {...rest}>
       {children}
     </svg>
   );
@@ -46,7 +85,7 @@ function Folder({ expanded, children }) {
     <HStack gap={0} content="start" align="center">
       <Icon
         style={{
-          transform: expanded ? "rotate(90deg)" : "",
+          transform: expanded ? "rotate(90deg)" : ""
         }}
       >
         <ExpandIcon />
@@ -61,17 +100,9 @@ function Folder({ expanded, children }) {
   );
 }
 
-const classes = {
-  item: css`
-    &:not(:first-of-type) {
-      margin-top: 15px;
-    }
-  `,
-};
-
 function Header({ children }) {
   return (
-    <a className={"uibook-sidepanel-el " + classes.item}>
+    <a className={cx(classes.sidepanelEl, classes.item)}>
       <div
         style={{
           marginLeft: 0,
@@ -80,7 +111,7 @@ function Header({ children }) {
           fontWeight: 900,
           fontSize: 16,
           color: "hsl(0, 0%, 56%)",
-          letterSpacing: 2,
+          letterSpacing: 2
         }}
       >
         <Text>{children}</Text>
@@ -89,26 +120,16 @@ function Header({ children }) {
   );
 }
 
-function Item({
-  children,
-  depth = 1,
-  selected = false,
-  folder = false,
-  onClick = null,
-}) {
+function Item({ children, depth = 1, selected = false, folder = false, onClick = null }) {
   const baseMargin = folder ? 3 : 4;
   const baseMarginAdd = folder ? 3 : 4;
 
   return (
-    <a
-      className={"uibook-sidepanel-item " + (selected ? "selected" : "")}
-      onClick={onClick}
-    >
+    <a className={cx(classes.sidepanelItem, selected && "selected")} onClick={onClick}>
       <div
         style={{
           userSelect: "none",
-          paddingLeft:
-            baseMarginAdd + (16 + baseMargin) * (depth - (folder ? 1 : 0)),
+          paddingLeft: baseMarginAdd + (16 + baseMargin) * (depth - (folder ? 1 : 0))
         }}
       >
         {children}
@@ -117,12 +138,7 @@ function Item({
   );
 }
 
-export function SidePanel({
-  tree,
-  onClick,
-  defaultTag = "components",
-  selected,
-}: SidePanelProps) {
+export function SidePanel({ tree, onClick, defaultTag = "components", selected }: SidePanelProps) {
   const [closed, setClosed] = useState(false);
   const items = toItems(tree, onClick, defaultTag, selected);
   if (closed) {
@@ -132,7 +148,7 @@ export function SidePanel({
           position: "absolute",
           left: 5,
           top: 5,
-          zIndex: 1,
+          zIndex: 1
         }}
         onClick={() => {
           setClosed(false);
@@ -151,21 +167,19 @@ export function SidePanel({
         overflow: "auto",
         position: "relative",
         gridArea: "side",
-        width: 350,
+        width: 350
       }}
     >
       <IconButton
         style={{
           position: "absolute",
-          right: 10,
+          right: 10
         }}
         onClick={() => {
           setClosed(true);
         }}
       >
-        <ExpandIcon
-          style={{ transform: "rotate(180deg)", width: 18, height: 18 }}
-        />
+        <ExpandIcon style={{ transform: "rotate(180deg)", width: 18, height: 18 }} />
       </IconButton>
       <Stack gap={1}>{items}</Stack>
     </nav>
@@ -187,9 +201,7 @@ function toItems(
   selected: string
 ) {
   const [expanded, setExpanded] = useState(new Set());
-  const queue = [
-    ...tree.map((el) => ({ tag: defaultTag, ...el, depth: 1 })).sort(sortFn),
-  ];
+  const queue = [...tree.map(el => ({ tag: defaultTag, ...el, depth: 1 })).sort(sortFn)];
   const items = [];
   let lastTag = undefined;
   while (queue.length !== 0) {
@@ -198,7 +210,7 @@ function toItems(
     let key = item.depth + item.title;
     const tag = item.tag;
     if (lastTag !== tag) {
-      items.push(<Header key={key}>{tag}</Header>);
+      items.push(<Header key={tag}>{tag}</Header>);
       lastTag = tag;
     }
     if ("items" in item) {
@@ -209,7 +221,7 @@ function toItems(
           key={key}
           depth={depth}
           onClick={() => {
-            setExpanded((s) => {
+            setExpanded(s => {
               if (!s.has(key)) {
                 s.add(key);
               } else {
@@ -223,9 +235,7 @@ function toItems(
         </Item>
       );
       if (ex) {
-        queue.unshift(
-          ...item.items.map((el) => ({ ...el, depth: depth + 1, tag: tag }))
-        );
+        queue.unshift(...item.items.map(el => ({ ...el, depth: depth + 1, tag: tag })));
       }
     } else {
       items.push(

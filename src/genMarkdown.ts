@@ -4,7 +4,7 @@ function generateDesciption(description) {
   return description + "\n";
 }
 
-function generatePropType(type) {
+export function generatePropType(type) {
   let values;
   if (Array.isArray(type.value)) {
     values =

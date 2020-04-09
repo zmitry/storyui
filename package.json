@@ -1,7 +1,7 @@
 {
   "name": "storyui",
   "version": "1.0.0",
-  "main": "dist/index.js",
+  "main": "dist/storyui.esm.js",
   "author": "dmitry",
   "license": "MIT",
   "dependencies": {
@@ -21,6 +21,7 @@
     "tsdx": "^0.13.1"
   },
   "scripts": {
-    "build": "tsdx build"
+    "build": "tsdx build",
+    "watch": "tsdx watch"
   }
 }
