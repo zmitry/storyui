@@ -11,13 +11,13 @@
     "@types/react-dom": "^16.9.6",
     "emotion": "^10.0.27",
     "import-all.macro": "*",
-    "lodash": "^4.17.15",
     "marked": "^0.8.2",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-error-boundary": "^1.2.5",
     "react-textarea-autosize": "^7.1.2",
-    "use-location-state": "^2.3.1"
+    "use-location-state": "^2.3.1",
+    "babel-plugin-react-docgen": "^4.1.0"
   },
   "devDependencies": {
     "tsdx": "^0.13.1"

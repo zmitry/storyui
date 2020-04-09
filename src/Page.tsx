@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import capitalize from "lodash/capitalize";
 import ErrorBoundary from "react-error-boundary";
 import { css } from "emotion";
-import { omit } from "./helpers";
+import { omit, capitalize } from "./helpers";
 import { event } from "./event";
 import { Stack, Loader, OpenLinkIcon, EditIcon, IconButton, HStack, IFrame } from "./components";
 import { Field } from "./components/Form";

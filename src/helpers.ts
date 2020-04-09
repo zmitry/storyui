@@ -9,3 +9,12 @@ export function omit(object, ...keys: string[]) {
     { ...object }
   );
 }
+
+export function capitalize(text: string) {
+  if (!text) {
+    return text;
+  }
+  const [t, ...rest] = text;
+  const d = t.toUpperCase() + rest.join("");
+  return d;
+}
