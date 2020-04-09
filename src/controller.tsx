@@ -3,9 +3,10 @@ import { useQueryState } from "use-location-state";
 import { basename } from "path";
 import { css } from "emotion";
 import { GenerateHtml } from "./genMarkdown";
-import { docsUi, Stack, SidePanel, IFrame } from "./components";
+import { docsUi, Stack, SidePanel } from "./components";
 import { Page } from "./Page";
 import { ControllerTemplate } from "./ControllerTemplate";
+import { useProps } from "./useProps";
 
 function useData({ pages }) {
   const pagesArray = [];
@@ -17,7 +18,7 @@ function useData({ pages }) {
         items: []
       };
       for (const pageCase of page.cases) {
-        pagesArray.push({ ...pageCase, nest: true });
+        pagesArray.push({ ...pageCase, nest: true, framed: page.config?.framed });
         linksObj[page.name].items.push({
           title: pageCase.name,
           key: pageCase.name,
@@ -40,21 +41,11 @@ function useData({ pages }) {
   };
 }
 
-function Content({ page, name, isEditable, framed }) {
-  if (page.nest) {
-    return (
-      <div key={name} contentEditable={isEditable}>
-        <Page framed={framed} Value={page.Component} title={page.name} />
-      </div>
-    );
-  }
-  const content = page.cases.map((storyCase, index) => {
+function Content({ page, name, framed }) {
+  const cases = page.cases || [page];
+  const content = cases.map((storyCase, index) => {
     const key = name + index;
-    return (
-      <div key={key} contentEditable={isEditable}>
-        <Page framed={framed} Value={storyCase.Component} title={storyCase.name} />
-      </div>
-    );
+    return <Page key={key} framed={framed} Value={storyCase.Component} title={storyCase.name} />;
   });
   return content;
 }
@@ -67,6 +58,8 @@ const classes = {
     }
   `
 };
+
+const Render = ({ children }) => children();
 const DefaultLayout = ({ children }) => {
   return (
     <Stack className={classes.container} inner="10px 0" gap={10}>
@@ -79,31 +72,33 @@ export default function StoryController(props) {
   const { links, pagesArray } = useData(props);
 
   const Layout = props.layout || DefaultLayout;
-  const [page, setPage] = useQueryState("page", pagesArray[0].name);
+  const [page, setPage] = useQueryState("page", "");
 
-  const isEditable = false;
   const [iframe] = useQueryState("iframe", "off");
   const pageData =
     pagesArray
-
       .map(el => (el.cases ? [el.cases, el] : el))
       .flat(2)
       .find(el => el.name === page) || pagesArray[0];
   const Wrapper = props.wrapper;
 
-  const Cmp = Wrapper(
-    <Content
-      framed={pageData.framed}
-      name={pageData.name}
-      page={pageData}
-      isEditable={isEditable}
-    />
-  );
+  const Cmp = Wrapper(<Content framed={pageData.framed} name={pageData.name} page={pageData} />);
   if (iframe === "on") {
     return Cmp;
   } else if (iframe === "single") {
     const V = pageData.Component;
-    return Wrapper(<V />);
+    if (!page) {
+      return <div />;
+    }
+
+    return Wrapper(
+      <Render>
+        {() => {
+          const { props } = useProps(V);
+          return <V {...props} />;
+        }}
+      </Render>
+    );
   }
   const component = pageData.component?.__docgenInfo;
   const showDesign = !!component;
@@ -145,14 +140,10 @@ export default function StoryController(props) {
         )
       }
     >
-      {pageData.iframe ? (
-        <IFrame page={page}></IFrame>
-      ) : (
-        <Layout>
-          <h1>{basename(pageData.name)}</h1>
-          {Cmp}
-        </Layout>
-      )}
+      <Layout>
+        <h1>{basename(pageData.name)}</h1>
+        {Cmp}
+      </Layout>
     </ControllerTemplate>
   );
 }

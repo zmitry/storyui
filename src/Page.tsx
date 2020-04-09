@@ -1,90 +1,10 @@
-import React, { useState } from "react";
-import ErrorBoundary from "react-error-boundary";
 import { css } from "emotion";
-import { omit, capitalize } from "./helpers";
-import { event } from "./event";
-import { Stack, Loader, OpenLinkIcon, EditIcon, IconButton, HStack, IFrame } from "./components";
-import { Field } from "./components/Form";
+import React, { useEffect, useState } from "react";
+import ErrorBoundary from "react-error-boundary";
+import { EditIcon, Frame, HStack, IconButton, link, OpenLinkIcon, Stack } from "./components";
 import { Card } from "./components/Card";
-
-function isLowerCase(str) {
-  return str === str.toLowerCase() && str !== str.toUpperCase();
-}
-
-export function useArgs({ props }) {
-  let fields = {};
-
-  let events = {};
-  Object.entries(props).reduce((acc, [key, value]) => {
-    if (key.startsWith("set") && !isLowerCase(key[3])) {
-      return acc;
-    }
-    if (key.startsWith("on")) {
-      events[key] = event(key);
-    } else {
-      const docValue = value as any;
-      const initialValue = docValue.defaultValue?.value || "";
-      const [val, update] = useState(initialValue.replace(/['"]+/g, ""));
-      fields[key] = {
-        type: docValue.tsType?.name,
-        value: val,
-        update,
-        label: key,
-        key
-      };
-    }
-    return acc;
-  }, {});
-  return {
-    fields,
-    events
-  };
-}
-
-function getHandler(key) {
-  return "set" + capitalize(key);
-}
-
-type Field = {
-  type: string;
-  value: any;
-  label: string;
-  update: (v: any) => void;
-  key: string;
-  helper?: string;
-};
-
-function toProps(fields: Field[]) {
-  return fields.reduce((acc, el) => {
-    acc[el.key] = el.value;
-    acc[getHandler(el.key)] = el.update;
-    return acc;
-  }, {});
-}
-
-export function Inputs({ fields }: { fields: Record<string, Field> }) {
-  return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-        gridAutoFlow: "row dense",
-        gridGap: 10
-      }}
-    >
-      {Object.values(fields).map(field => {
-        return (
-          <Field
-            type={field.type}
-            value={field.value}
-            onChange={field.update}
-            label={field.label}
-          />
-        );
-      })}
-    </div>
-  );
-}
+import { omit } from "./helpers";
+import { useProps } from "./useProps";
 
 const classes = {
   header: css`
@@ -95,22 +15,16 @@ const classes = {
 
 export function Page({ Value, title, framed }) {
   // const [targetRef, isInViewport] = useIsInViewport(20);
-  const isInViewport = true;
-  const args = Value.__docgenInfo?.props ? useArgs(Value.__docgenInfo) : null;
-  const props = args
-    ? {
-        ...toProps(Object.values(args.fields)),
-        ...args.events
-      }
-    : {};
+  const { props, propsEditor } = useProps(Value);
   const [propsExpanded, setExpanded] = useState(false);
+  const [hasError, setError] = useState(false);
   return (
     <Card
       title={
         <div className={classes.header}>
           <h4 style={{ margin: 0 }}>{title}</h4>
           <HStack gap={5} style={{ marginLeft: "auto" }}>
-            {args && (
+            {props && (
               <IconButton
                 aria-label="Show props"
                 data-balloon-pos="down"
@@ -124,10 +38,10 @@ export function Page({ Value, title, framed }) {
               target="_blank"
               href={
                 "#" +
-                new URLSearchParams({
+                link({
                   page: title,
                   iframe: "single"
-                }).toString()
+                })
               }
             >
               <IconButton aria-label="Open in separate window" data-balloon-pos="down">
@@ -139,34 +53,40 @@ export function Page({ Value, title, framed }) {
       }
     >
       <Stack gap={15}>
-        {isInViewport ? (
-          <>
-            <div
-              style={{
-                background: "white",
-                padding: 10,
-                position: "relative",
-                maxHeight: "calc(100vh - 250px)",
-                overflow: "auto"
-              }}
-            >
-              <ErrorBoundary
-                key={JSON.stringify(props)}
-                FallbackComponent={() => "error" as any}
-                onError={err => {
-                  console.log(err);
-                  return "err";
-                }}
-              >
-                {framed ? <IFrame page={title} /> : <Value {...props} />}
-              </ErrorBoundary>
-            </div>
-          </>
-        ) : (
-          <Loader />
-        )}
+        <div
+          style={{
+            background: "white",
+            padding: 10,
+            position: "relative",
+            maxHeight: "calc(100vh - 250px)",
+            overflow: "auto"
+          }}
+        >
+          <ErrorBoundary
+            key={hasError ? JSON.stringify(props) : "error"}
+            FallbackComponent={() => {
+              useEffect(() => {
+                return () => setError(false);
+              }, []);
+              return null;
+            }}
+            onError={err => {
+              console.log(err);
+              setError(true);
+              return "err";
+            }}
+          >
+            {framed ? (
+              <Frame>
+                <Value {...props} />
+              </Frame>
+            ) : (
+              <Value {...props} />
+            )}
+          </ErrorBoundary>
+        </div>
       </Stack>
-      {propsExpanded ? <Inputs fields={args.fields} /> : null}
+      {propsExpanded ? propsEditor : null}
     </Card>
   );
 }

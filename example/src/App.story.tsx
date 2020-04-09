@@ -3,6 +3,7 @@ import App, { Header } from "./App";
 
 export default {
   // it means show each story as separate option
+  framed: true,
   nest: true
 };
 

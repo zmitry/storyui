@@ -12,6 +12,7 @@ const classes = {
     border-radius: 3px;
     margin: auto;
     position: relative;
+    width: 100%;
   `,
   divider: css`
     height: 2px;
