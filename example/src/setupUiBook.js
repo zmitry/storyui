@@ -1,4 +1,4 @@
-import { start, buildPages } from "@uibook/core";
+import { start, buildPages } from "storyui";
 import "@uibook/core/styles.css";
 import "./index.css";
 
