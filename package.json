@@ -1,6 +1,6 @@
 {
   "name": "storyui",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "dist/storyui.esm.js",
   "type": "dist/index.d.ts",
   "author": "dmitry",
