@@ -6,6 +6,7 @@ const { addUiBook } = require("../addUibook");
 
 module.exports = function override(config, env) {
   // optional
+  // add this plugin to get automatic docs for component
   config = addBabelPlugin([
     "babel-plugin-react-docgen",
     {

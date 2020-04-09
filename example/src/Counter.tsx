@@ -1,8 +1,21 @@
 import React from "react";
 
-export function Counter({ value, onClick }: { value: number; onClick: (arg: any) => void }) {
+/*
+# Counter
+# With markdown
+write some doc
+*/
+export function Counter({
+  value,
+  onClick,
+  style
+}: {
+  value: number;
+  onClick: (arg: any) => void;
+  style: any;
+}) {
   return (
-    <div>
+    <div style={style}>
       <button
         onClick={() => {
           onClick(value + 1);
