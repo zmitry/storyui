@@ -1,12 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import logo from "./logo.svg";
 import "./App.css";
 
 export function Header({ children }: { children: React.ReactNode }) {
+  const [state, setState] = useState("hello");
   return (
-    <header className="App-header">
+    <header className="App-header" onClick={() => setState(Math.random().toFixed(2))}>
       <img src={logo} className="App-logo" alt="logo" />
       {children}
+      {state}
     </header>
   );
 }

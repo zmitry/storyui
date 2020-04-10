@@ -1,13 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import App, { Header } from "./App";
 
 export default {
   // it means show each story as separate option
-  framed: true,
   nest: true
 };
 
 export function AppStory() {
+  const [state, setState] = useState("hello");
+  console.log("setState: ", setState);
+  console.log("state: ", state);
   return <App />;
 }
 
