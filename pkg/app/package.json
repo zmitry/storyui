@@ -1,0 +1,33 @@
+{
+  "name": "storyui",
+  "version": "1.0.4",
+  "main": "dist/storyui.esm.js",
+  "types": "dist/index.d.ts",
+  "author": "dmitry",
+  "license": "MIT",
+  "dependencies": {
+    "@types/lodash": "^4.14.149",
+    "@types/react": "^16.9.33",
+    "@types/react-dom": "^16.9.6",
+    "emotion": "^10.0.27",
+    "import-all.macro": "*",
+    "marked": "^0.8.2",
+    "react-error-boundary": "^1.2.5",
+    "react-textarea-autosize": "^7.1.2",
+    "use-location-state": "^2.3.1"
+  },
+  "devDependencies": {
+    "tsdx": "^0.13.1"
+  },
+  "peerDependencies": {
+    "babel-plugin-react-docgen": "*",
+    "html-webpack-plugin": "*",
+    "import-all.macro": "*",
+    "react": "*",
+    "react-dom": "*"
+  },
+  "scripts": {
+    "build": "tsdx build",
+    "watch": "tsdx watch"
+  }
+}
