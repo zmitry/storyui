@@ -7,6 +7,7 @@ import React, {
   useImperativeHandle
 } from "react";
 import { Button } from "./Button";
+import { FieldAdder } from "./Field";
 
 const CollapseContext = createContext({
   collapsed: false,
@@ -18,7 +19,7 @@ function useCollapseContext() {
 }
 
 function useGroup({ parentCollapsed }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const className = "bg " + (collapsed ? "collapsed" : "");
   const toggleCollapsed = () => {
     setCollapsed(s => {
@@ -26,9 +27,9 @@ function useGroup({ parentCollapsed }) {
     });
   };
 
-  useLayoutEffect(() => {
-    setCollapsed(parentCollapsed);
-  }, [parentCollapsed]);
+  //   useLayoutEffect(() => {
+  //     setCollapsed(parentCollapsed);
+  //   }, [parentCollapsed]);
   return {
     collapsed,
     className,
@@ -45,6 +46,13 @@ type GroupProps = {
   [s: string]: any;
 };
 
+function map<V, T>(
+  obj: Record<string, V>,
+  fn: (arg: [string, V], i: number) => T
+) {
+  return Object.entries(obj).map(fn);
+}
+
 export const Group = forwardRef(function Group(
   {
     children,
@@ -53,6 +61,10 @@ export const Group = forwardRef(function Group(
     className,
     showCollapsed = true,
     end = null,
+    values,
+    renderItem,
+    onAdd,
+    onAddIconClick,
     ...props
   }: GroupProps,
   ref
@@ -65,18 +77,28 @@ export const Group = forwardRef(function Group(
   } = useGroup({
     parentCollapsed: parent.collapsed
   });
+  const [addEnabled, setAddEnable] = useState(false);
+
   const renderBracket = t =>
     t === "start" ? (type === "map" ? "{" : "[") : type === "map" ? "}" : "]";
   useImperativeHandle(ref, () => ({
     collapse() {
       toggleCollapsed();
+    },
+    insertEmpty() {
+      setAddEnable(true);
     }
   }));
-  if (parent.collapsed) {
+  if (inline) {
     return (
-      <span ref={ref as any} onClick={toggleCollapsed} {...props}>
+      <span
+        ref={ref as any}
+        className="start-paren"
+        onClick={toggleCollapsed}
+        {...props}
+      >
         {renderBracket("start")}
-        {`…`}
+        {Object.keys(values).length}
         {renderBracket("end")}
       </span>
     );
@@ -90,8 +112,8 @@ export const Group = forwardRef(function Group(
         {...props}
         className={[className, "group", inlineClassname].join(" ")}
       >
-        <span className="start-paren">
-          {renderBracket("start")}
+        <span className="start-paren" onClick={toggleCollapsed}>
+          {/* {renderBracket("start")}
           {showCollapsed && (
             <Button
               title="Collapse"
@@ -101,12 +123,37 @@ export const Group = forwardRef(function Group(
               ▲
             </Button>
           )}
-          {title}
+          {title} */}
+          {renderBracket("start")}
+          {Object.keys(values).length}
+          {renderBracket("end")}
         </span>
+        {map(values, ([key, value], i) => {
+          return (
+            <span className="entry-line">
+              {renderItem(key, value)}
+              {/* {i !== Object.keys(values).length - 1 && ","} */}
+            </span>
+          );
+        })}
+        {addEnabled && (
+          <span className="entry-line">
+            <FieldAdder
+              onBlur={(key, v) => {
+                if (key) {
+                  onAdd(key, v);
+                }
+                setAddEnable(false);
+              }}
+            />
+          </span>
+        )}
         {children}
         <span className="closing-group">
-          <span className="end-paren">{renderBracket("end")}</span>
-          {end}
+          {/* <span className="end-paren">{renderBracket("end")}</span> */}
+          <Button title="Add item" className="add-btn" onClick={onAddIconClick}>
+            +
+          </Button>
         </span>
       </span>
     </CollapseContext.Provider>

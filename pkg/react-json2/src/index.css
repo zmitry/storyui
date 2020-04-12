@@ -58,16 +58,10 @@ select {
   --action-red: hsla(0, 0%, 90%, 1);
   --action-green: #690;
   --height: 20px;
-
-  --microtip-transition-duration: 0.5s;
-  --microtip-transition-delay: 0.8s;
-  --microtip-transition-easing: ease-out;
-  --microtip-font-size: 10px;
-  --microtip-font-weight: bold;
 }
 
 .entry-line {
-  margin-left: 3ch;
+  margin-left: 2ch;
   display: block;
   position: relative;
 }
@@ -107,12 +101,15 @@ select {
   -webkit-appearance: none;
   border: none;
   box-shadow: 0 0 2px var(--grey);
-  height: 19px;
-  width: 19px;
+  height: 15px;
+  width: 15px;
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  background: var(--grey-dark);
+}
+.icon-button svg {
+  height: 100%;
+  width: 100%;
 }
 
 .json-editor .icon-button:active,
@@ -214,4 +211,8 @@ select {
 }
 .json-editor .value.editable {
   background: inherit;
+}
+
+.start-paren {
+  color: hsl(0, 0%, 45%);
 }

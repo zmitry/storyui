@@ -1,17 +1,77 @@
-import React, { useState, useRef, useLayoutEffect } from "react";
+import React, {
+  useState,
+  useRef,
+  useLayoutEffect,
+  createContext,
+  useContext
+} from "react";
+import get from "lodash/get";
+import cloneDeep from "lodash/cloneDeep";
+import upd from "lodash/update";
+import set from "lodash/set";
+
+const FieldContext = createContext({
+  value: null,
+  update: null
+} as any);
+
+export function FieldProvider({ initialValue, children }) {
+  const [value, update] = useState(initialValue);
+
+  return (
+    <FieldContext.Provider
+      value={{
+        value,
+        update
+      }}
+    >
+      {children}
+    </FieldContext.Provider>
+  );
+}
+
+function setValue(value, path, v) {
+  if (path.length > 0) {
+    return set(value, path, v);
+  } else {
+    return v;
+  }
+}
+
+export function useField(path: string[]) {
+  const { value, update } = useContext(FieldContext);
+
+  return {
+    value: path.length ? get(value, path) : value,
+    update: (newFieldValue, p = []) => {
+      const v2 = setValue(cloneDeep(value), path.concat(p), newFieldValue);
+      return update(v2);
+    },
+
+    updateKey: (newKeyValue, key) => {
+      if (path.length === 0) {
+        const { [key]: v, ...obj } = value;
+        return update({ [newKeyValue]: v, ...obj });
+      }
+      return update(
+        upd(cloneDeep(value), path, ({ [key]: v, ...obj }) => {
+          return { [newKeyValue]: v, ...obj };
+        })
+      );
+    }
+  };
+}
 
 export function FieldAdder({ onBlur, ...props }) {
-  const [key, setKey] = useState("");
   return (
     <span className="adder-group">
       <Field
-        changeable={true}
+        changeable={false}
         value=""
         posType="name"
         defaultEditable={true}
         onBlur={(e, val) => {
           onBlur(val, "");
-          setKey(val);
         }}
         className="adder input"
       />
@@ -70,8 +130,16 @@ export function Field({
             ref={selectTargetRef}
             onChange={e => {
               ref.current.focus();
-              setType(e.target.value as any);
-              setValue("");
+              const val = e.target.value;
+              setType(val as any);
+              if (val === "map") {
+                // setValue({});
+                onBlur && onBlur(e, {});
+              } else if (val === "array") {
+                onBlur && onBlur(e, []);
+              } else if (val === "date") {
+                setValue(new Date());
+              }
             }}
           >
             <option label="text">text</option>
@@ -80,6 +148,8 @@ export function Field({
             <option label="checkbox">checkbox</option>
             <option label="search">search</option>
             <option label="date">date</option>
+            <option label="map">map</option>
+            <option label="array">array</option>
           </select>
         )}
         <span> </span>
