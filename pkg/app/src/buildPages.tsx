@@ -6,17 +6,26 @@ function map<V, T>(obj: Record<string, V>, fn: (arg: [string, V]) => T) {
   return Object.entries(obj).map(fn);
 }
 
-export function reactRenderer(Component, target, props, meta) {
-  ReactDOM.render(<Component {...props} />, target);
-}
+const id = children => children;
 
-export function buildPages(modules, renderer = reactRenderer) {
-  const pages = Object.entries(modules).reduce((acc, [name, el]: any) => {
+export const reactRenderer = ({ wrapper = id }) => (
+  Component,
+  target,
+  props
+) => {
+  ReactDOM.render(wrapper(<Component {...props} />), target);
+};
+
+export function buildPages(
+  modules: Record<string, Record<string, any> & { default?: any }>,
+  renderer = reactRenderer({})
+) {
+  const pages = map(modules, ([name, el]) => {
     const config = el.default || {};
     const stories = el.default?.stories
       ? el.default?.stories
       : omit(el, "default");
-    const res = {
+    return {
       name: name,
       nest: config.nest,
       component: el.default?.component,
@@ -32,8 +41,6 @@ export function buildPages(modules, renderer = reactRenderer) {
         render: renderer
       }))
     };
-    acc.push(res);
-    return acc;
-  }, []);
+  });
   return pages;
 }

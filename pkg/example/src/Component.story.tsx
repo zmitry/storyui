@@ -14,14 +14,17 @@ export function CounterStory({
   value = 1,
   setValue,
   color,
-  setColor
+  setColor,
+  date
 }: {
   value: number;
   // set + property name is automatically generated setter for value
   setValue: any;
   setColor: any;
   color: string;
+  date: Date;
 }) {
+  console.log("date: ", date);
   return (
     <div>
       <button

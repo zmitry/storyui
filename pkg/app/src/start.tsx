@@ -13,13 +13,15 @@ type Config = {
   pages: any;
 };
 export function start(config: Config) {
-  window.onload = function() {
-    Object.assign(config, defaults);
-    setupStyles();
-    var tag = document.getElementById("uibook-root");
-    ReactDOM.render(
-      <UibookController wrapper={config.wrapper} layout={config.layout} pages={config.pages} />,
-      tag
-    );
-  };
+  Object.assign(config, defaults);
+  setupStyles();
+  var tag = document.getElementById("uibook-root");
+  ReactDOM.render(
+    <UibookController
+      wrapper={config.wrapper}
+      layout={config.layout}
+      pages={config.pages}
+    />,
+    tag
+  );
 }

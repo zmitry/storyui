@@ -19,8 +19,8 @@ export function useArgs({ props }) {
       events[key] = event(key);
     } else {
       const docValue = value as any;
-      const initialValue = docValue.defaultValue?.value || "";
-      const [val, update] = useState(initialValue.replace(/['"]+/g, ""));
+      const initialValue = docValue.defaultValue?.value;
+      const [val, update] = useState(initialValue?.replace(/['"]+/g, ""));
       fields[key] = {
         type: docValue.tsType?.name,
         value: val,
@@ -83,7 +83,9 @@ export function Inputs({ fields }: { fields: Record<string, Field> }) {
 }
 
 export function useProps(Component) {
-  const args = Component.__docgenInfo?.props ? useArgs(Component.__docgenInfo) : null;
+  const args = Component.__docgenInfo?.props
+    ? useArgs(Component.__docgenInfo)
+    : null;
   const props = args
     ? {
         ...toProps(Object.values(args.fields)),

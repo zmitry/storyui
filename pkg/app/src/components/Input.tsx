@@ -1,5 +1,4 @@
 import React from "react";
-// import TextareaAutosize from "react-textarea-autosize";
 import { css, cx } from "emotion";
 
 type Props = Record<string, any> & {
@@ -26,7 +25,7 @@ const classes = {
     -webkit-box-align: center;
     align-items: center;
     position: relative;
-    -webkit-appearance: none;
+    justify-content: start;
     font-size: 1rem;
     padding-left: 1rem;
     padding-right: 1rem;
@@ -68,8 +67,13 @@ export function Label({ children, label }) {
   );
 }
 export const Input = React.forwardRef(
-  ({ className, type, helper, label, defaultValue, ...props }: Props, ref: any) => {
-    let input = <input className={cx(classes.input, className)} type={type} {...props} />;
+  (
+    { className, type, helper, label, defaultValue, ...props }: Props,
+    ref: any
+  ) => {
+    let input = (
+      <input className={cx(classes.input, className)} type={type} {...props} />
+    );
     if (type === "textarea") {
       // not implemented
       // input = (
@@ -81,7 +85,13 @@ export const Input = React.forwardRef(
       //   />
       // );
     } else if (type === "select") {
-      input = <select ref={ref} className={cx(classes.input, className)} {...(props as any)} />;
+      input = (
+        <select
+          ref={ref}
+          className={cx(classes.input, className)}
+          {...(props as any)}
+        />
+      );
     }
     return (
       <div className="group">

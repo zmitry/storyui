@@ -7,11 +7,12 @@ module.exports.addStoryUiConfig = ({
 }) => {
   const HtmlWebpackPlugin = require("html-webpack-plugin");
   return function(config, env) {
+    config.output.filename = "static/js/[name].js";
+
     const setup = [setupFilePath];
     if (config.mode === "development") {
-      // setup.unshift(require.resolve("react-dev-utils/webpackHotDevClient"));
+      setup.unshift(require.resolve("react-dev-utils/webpackHotDevClient"));
     }
-    config.output.filename = "static/js/[name].js";
     if (isObject(config.entry)) {
       config.entry = {
         main: config.entry,

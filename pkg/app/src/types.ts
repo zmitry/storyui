@@ -17,3 +17,7 @@ export type File = {
   component: React.Component;
   inputs: any;
 };
+
+export type Color = "color";
+
+export const ArrayInput = (() => {}) as any;
