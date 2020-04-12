@@ -1,0 +1,47 @@
+{
+  "name": "react-json",
+  "version": "0.2.1",
+  "scripts": {
+    "start": "react-scripts start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arqex/react-json.git"
+  },
+  "keywords": [
+    "react",
+    "forms",
+    "json"
+  ],
+  "author": "Javier Marquez",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/arqex/react-json/issues"
+  },
+  "homepage": "https://github.com/arqex/react-json",
+  "dependencies": {
+    "freezer-js": "^0.5.2",
+    "parcel-bundler": "^1.12.4",
+    "react-json-tree": "^0.11.2",
+    "react-object-editor": "^0.1.2"
+  },
+  "peerDependencies": {
+    "react": "*"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.9.0",
+    "react-scripts": "*"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "presets": ["react-app"],
+  "plugins": [
+    [
+      "babel-plugin-react-docgen",
+      {
+        "removeMethods": true,
+        "handlers:": ["defaultPropsHandler"]
+      }
+    ]
+  ]
+}
