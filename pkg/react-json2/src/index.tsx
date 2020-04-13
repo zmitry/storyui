@@ -1,6 +1,6 @@
 import importAll from "import-all.macro";
 import { start, buildPages } from "storyui";
-import "./index.css";
+import "./index2.css";
 if (window.location.pathname.startsWith("/storyui.html")) {
   async function setup() {
     // you can pass wrapper as param

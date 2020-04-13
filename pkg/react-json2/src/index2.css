@@ -1,0 +1,143 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Remove default padding */
+ul[class],
+ol[class] {
+  padding: 0;
+}
+
+/* Remove default margin */
+body,
+h1,
+h2,
+h3,
+h4,
+p,
+ul[class],
+ol[class],
+li,
+figure,
+figcaption,
+blockquote,
+dl,
+dd {
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+  scroll-behavior: smooth;
+  text-rendering: optimizeSpeed;
+  line-height: 1.5;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+/* styles */
+
+.json-editor {
+  font-family: "Lucida Console", Monaco, monospace;
+}
+
+:root {
+  --green: #690;
+  --red: #bd6476;
+  --blue: #07a;
+  --grey: rgb(109, 109, 109);
+  --grey-dark: hsla(0, 0%, 90%, 1);
+  --grey-light: hsla(0, 0%, 92%);
+  --action-red: hsla(0, 0%, 90%, 1);
+  --action-green: #690;
+  --height: 20px;
+}
+.json-editor .value {
+  color: var(--blue);
+}
+
+.json-editor .name {
+  color: var(--green);
+}
+
+.json-editor input {
+  border: none;
+  outline: none;
+  max-height: 25px;
+  color: inherit;
+  background: inherit;
+}
+
+.json-editor .number.value {
+  color: var(--red);
+}
+
+.json-editor .icon-button {
+  height: var(--height);
+  padding: 0;
+  margin: 0;
+  border-radius: 5px;
+  outline: 0;
+  -webkit-appearance: none;
+  border: none;
+  height: 18px;
+  width: 18px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  background: inherit;
+}
+.icon-button svg {
+  height: 100%;
+  width: 100%;
+}
+
+.json-editor .icon-button:active,
+.json-editor .icon-button:focus {
+  box-shadow: inset 0 0 3px var(--blue);
+}
+.grey {
+  color: hsl(0, 0%, 45%);
+}
+
+.row .icon-button {
+  opacity: 0;
+}
+
+.row:focus-within,
+.row:focus,
+.row:hover {
+  background: hsla(0, 0%, 95%, 1);
+}
+
+.row:focus-within .icon-button,
+.row:focus .icon-button,
+.row:hover .icon-button {
+  display: inline;
+  opacity: 1;
+  background: inherit;
+}
+
+.type-select {
+  background: white;
+  border: none;
+  box-shadow: 0 0 2px var(--grey);
+  width: 15px;
+  color: inherit;
+  background: inherit;
+}
+
+input[type="number"]:focus,
+input[type="number"]:hover,
+input[type="string"]:focus,
+input[type="string"]:hover {
+  box-shadow: 0px 0px 5px 0px #979797de;
+  border: 1px solid #ccc !important;
+}

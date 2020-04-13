@@ -3,7 +3,7 @@
 
   "compilerOptions": {
     "module": "esnext",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": ["dom", "dom.iterable", "esnext", "ES2019.Object"],
     "importHelpers": true,
     "declaration": true,
     "sourceMap": true,

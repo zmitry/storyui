@@ -18,21 +18,33 @@ export function JSONStory() {
   return (
     <Json
       value={{
-        a: "1",
-        b: {
-          a: "1"
-        },
-        c: [{ a: "1" }, { a: "1" }],
-        d: {
-          a: {
-            a: 1,
-            b: "1",
-            c: {
-              d: {
-                a: "1"
-              }
-            }
-          }
+        include: ["src", "types"],
+        compilerOptions: {
+          module: "esnext",
+          lib: ["dom", "esnext"],
+          importHelpers: true,
+          declaration: true,
+          sourceMap: true,
+          rootDir: "./src",
+          strict: true,
+          noImplicitAny: false,
+          downlevelIteration: true,
+          strictNullChecks: false,
+          strictFunctionTypes: true,
+          strictPropertyInitialization: false,
+          noImplicitThis: true,
+          alwaysStrict: true,
+          noUnusedLocals: true,
+          noUnusedParameters: true,
+          noImplicitReturns: true,
+          noFallthroughCasesInSwitch: true,
+          moduleResolution: "node",
+          baseUrl: "./",
+          paths: {
+            "*": ["src/*", "node_modules/*"]
+          },
+          jsx: "react",
+          esModuleInterop: true
         }
       }}
     />

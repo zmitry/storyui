@@ -15,10 +15,17 @@ export function Button({
   );
 }
 
-export function ExpandIcon() {
+export function PlusIcon(props) {
   return (
-    <svg width={12} height={12} fill="none" viewBox="0 0 90 180">
-      <path fill="#000" stroke="#000" d="M89 90L1 2v176l88-88z" />
+    <svg
+      viewBox="0 0 24 24"
+      width="24"
+      height="24"
+      stroke="currentColor"
+      {...props}
+    >
+      <line x1="12" y1="5" x2="12" y2="19"></line>
+      <line x1="5" y1="12" x2="19" y2="12"></line>
     </svg>
   );
 }

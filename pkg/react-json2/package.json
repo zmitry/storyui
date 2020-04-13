@@ -23,7 +23,8 @@
     "freezer-js": "^0.5.2",
     "parcel-bundler": "^1.12.4",
     "react-json-tree": "^0.11.2",
-    "react-object-editor": "^0.1.2"
+    "react-object-editor": "^0.1.2",
+    "typescript": "^3.8.3"
   },
   "peerDependencies": {
     "react": "*"

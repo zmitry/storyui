@@ -1,14 +1,11 @@
 import React, {
   useState,
   useRef,
-  useLayoutEffect,
   createContext,
-  useContext
+  useContext,
+  forwardRef
 } from "react";
-import get from "lodash/get";
-import cloneDeep from "lodash/cloneDeep";
 import upd from "lodash/update";
-import set from "lodash/set";
 
 const FieldContext = createContext({
   value: null,
@@ -30,31 +27,38 @@ export function FieldProvider({ initialValue, children }) {
   );
 }
 
-function setValue(value, path, v) {
-  if (path.length > 0) {
-    return set(value, path, v);
-  } else {
-    return v;
+function deletePropertyPath(obj, path) {
+  if (!obj || !path) {
+    return;
   }
+
+  for (var i = 0; i < path.length - 1; i++) {
+    obj = obj[path[i]];
+
+    if (typeof obj === "undefined") {
+      return;
+    }
+  }
+
+  Reflect.deleteProperty(obj, path.pop());
 }
 
-export function useField(path: string[]) {
+export function useField2() {
   const { value, update } = useContext(FieldContext);
 
   return {
-    value: path.length ? get(value, path) : value,
-    update: (newFieldValue, p = []) => {
-      const v2 = setValue(cloneDeep(value), path.concat(p), newFieldValue);
+    value: value,
+    update: (p = [], newFieldValue) => {
+      const v2 = upd({ ...value }, p, newFieldValue);
       return update(v2);
     },
-
-    updateKey: (newKeyValue, key) => {
-      if (path.length === 0) {
-        const { [key]: v, ...obj } = value;
-        return update({ [newKeyValue]: v, ...obj });
-      }
+    dropPath(path) {
+      deletePropertyPath(value, path);
+      update({ ...value });
+    },
+    updateKey: (newKeyValue, key, path) => {
       return update(
-        upd(cloneDeep(value), path, ({ [key]: v, ...obj }) => {
+        upd({ ...value }, path, ({ [key]: v, ...obj }) => {
           return { [newKeyValue]: v, ...obj };
         })
       );
@@ -63,23 +67,46 @@ export function useField(path: string[]) {
 }
 
 export function FieldAdder({ onBlur, ...props }) {
+  let v;
   return (
-    <span className="adder-group">
+    <span className="adder-group" {...props}>
       <Field
         changeable={false}
         value=""
         posType="name"
         defaultEditable={true}
         onBlur={(e, val) => {
-          onBlur(val, "");
+          v = val;
         }}
         className="adder input"
       />
       :
+      <SelectType />
+      <button
+        onClick={() => {
+          onBlur(v, "");
+        }}
+      >
+        ok
+      </button>
     </span>
   );
 }
 
+const SelectType = forwardRef((props, ref) => {
+  return (
+    <select className="type-select" ref={ref as any} {...props}>
+      <option label="text">text</option>
+      <option label="number">number</option>
+      <option label="select">select</option>
+      <option label="checkbox">checkbox</option>
+      <option label="search">search</option>
+      <option label="date">date</option>
+      <option label="map">map</option>
+      <option label="array">array</option>
+    </select>
+  );
+});
 export function Field({
   value,
   posType,
@@ -89,7 +116,7 @@ export function Field({
   defaultEditable = false,
   changeable = false
 }) {
-  const [editable, setEditable] = useState(defaultEditable);
+  const [editable, setEditable] = useState(!!value);
   const [type, setType] = useState(typeof value as any);
 
   const [val, setValue] = useState(value);
@@ -97,17 +124,17 @@ export function Field({
   const selectTargetRef = useRef(null);
 
   const classNameComposed = [posType, type, className].join(" ");
-  useLayoutEffect(() => {
-    if (ref.current) {
-      ref.current.focus();
-      ref.current.select();
-    }
-  }, [editable]);
+  // useLayoutEffect(() => {
+  //   if (ref.current) {
+  //     ref.current.focus();
+  //     ref.current.select();
+  //   }
+  // }, [editable]);
   const onBlurInternal = e => {
     e.preventDefault();
     if (!selectTargetRef.current) {
       if (ref.current !== e.relatedTarget) {
-        setEditable(false);
+        // setEditable(false);
         onBlur && onBlur(e, val);
       }
     } else if (
@@ -115,43 +142,20 @@ export function Field({
       selectTargetRef.current !== e.relatedTarget &&
       ref.current !== e.relatedTarget
     ) {
-      setEditable(false);
+      // setEditable(false);
       onBlur && onBlur(e, val);
     }
   };
 
-  if (editable || type === "checkbox") {
+  if (editable) {
     return (
-      <span className={classNameComposed + " editable"} onBlur={onBlurInternal}>
-        {changeable && (
-          <select
-            className="type-select"
-            value={type}
-            ref={selectTargetRef}
-            onChange={e => {
-              ref.current.focus();
-              const val = e.target.value;
-              setType(val as any);
-              if (val === "map") {
-                // setValue({});
-                onBlur && onBlur(e, {});
-              } else if (val === "array") {
-                onBlur && onBlur(e, []);
-              } else if (val === "date") {
-                setValue(new Date());
-              }
-            }}
-          >
-            <option label="text">text</option>
-            <option label="number">number</option>
-            <option label="select">select</option>
-            <option label="checkbox">checkbox</option>
-            <option label="search">search</option>
-            <option label="date">date</option>
-            <option label="map">map</option>
-            <option label="array">array</option>
-          </select>
-        )}
+      <span
+        onClick={e => {
+          ref.current.select();
+        }}
+        className={classNameComposed + " editable"}
+        onBlur={onBlurInternal}
+      >
         <span> </span>
         <input
           size={Math.min(Math.max(val.length, 3), 20)}
@@ -169,7 +173,7 @@ export function Field({
           type={type}
           onKeyDown={e => {
             if (e.which == 13) {
-              onBlur(e);
+              onBlurInternal(e);
             }
           }}
         />
@@ -180,7 +184,7 @@ export function Field({
     <span className={classNameComposed} onClick={v => setEditable(true)}>
       {before}
       {val === "" || val === undefined || val === null ? (
-        <span className="null-value">empty</span>
+        <span className="null-value">{JSON.stringify(val)}</span>
       ) : (
         String(val)
       )}

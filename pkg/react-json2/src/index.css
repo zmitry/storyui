@@ -216,3 +216,7 @@ select {
 .start-paren {
   color: hsl(0, 0%, 45%);
 }
+
+.grey {
+  color: hsl(0, 0%, 45%);
+}

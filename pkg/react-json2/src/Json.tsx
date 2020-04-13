@@ -1,8 +1,6 @@
-import React, { useState, useRef, useLayoutEffect } from "react";
-import { Group } from "./Group";
-import { Button, ExpandIcon, CloseIcon } from "./Button";
-import { Field, FieldAdder, FieldProvider } from "./Field";
-import { useField } from "./Field";
+import React, { useState } from "react";
+import { Button, PlusIcon, CloseIcon } from "./Button";
+import { Field, FieldAdder, FieldProvider, useField2 } from "./Field";
 
 function isObject(value) {
   var type = typeof value;
@@ -13,162 +11,242 @@ function isObject(value) {
   );
 }
 
-export function omit(object, ...keys: string[]) {
-  return keys.reduce(
-    (obj, key) => {
-      if (object && object.hasOwnProperty(key)) {
-        delete obj[key];
-      }
-      return obj;
-    },
-    { ...object }
-  );
-}
+const mapFn = (parentPath = []) => (el: any) =>
+  [el[0] as string, el[1], parentPath] as const;
 
-export function ResolveField({ value, fieldName = [], onBlur = null }) {
-  let input;
-  if (Array.isArray(value)) {
-    input = <ArrayField fieldName={fieldName} />;
-  } else if (isObject(value)) {
-    input = <ObjectField fieldName={fieldName} />;
-  } else {
-    input = (
-      <Field changeable={true} onBlur={onBlur} value={value} posType="value" />
-    );
+const sortFn = (a, b) => {
+  if (a[0] > b[0]) {
+    return -1;
+  } else if (a[0] < b[0]) {
+    return 1;
   }
-  return input;
-}
+  return 0;
+};
 
-function ObjectField({ fieldName = [] as string[] }) {
-  const groupRef = useRef(null);
-  const { value: fieldValue, update: updateField, updateKey } = useField(
-    fieldName
-  );
-  const [value, setValue] = useState(fieldValue);
-  const keysCount = Object.keys(value || {}).length;
+const arrayWrap = val => `[${val}]`;
+const objWrap = val => `{${val}}`;
 
-  useLayoutEffect(() => {
-    setValue(fieldValue);
-  }, [fieldValue]);
-  return (
-    <Group
-      ref={groupRef}
-      type="map"
-      showCollapsed={keysCount > 0}
-      className={"object"}
-      values={value}
-      onAdd={(key, v) => {
-        setValue({ ...value, [key]: v });
-      }}
-      renderItem={(key, val) => {
-        return (
-          <Property
-            onDelete={e => {
-              e.stopPropagation();
-              updateField(omit(value, key), []);
-            }}
-            name={String(key)}
-          >
-            {ResolveField({
-              value: val,
-              fieldName: fieldName.concat(String(key)),
-              onBlur: (e, v) => {
-                updateField(v, [key]);
-              }
-            })}
-          </Property>
-        );
-      }}
-      onAddIconClick={e => groupRef.current.insertEmpty(true)}
-    ></Group>
-  );
-}
-
-function Property({ onDelete, name, children }) {
-  return (
-    <React.Fragment>
-      <span>
-        <Button title="Delete property" onClick={onDelete}>
-          <CloseIcon />
-        </Button>
-
-        {name}
-      </span>
-      <span className="colon">:</span>
-      <span>{children}</span>
-    </React.Fragment>
-  );
-}
-function ArrayField({ fieldName = [] as string[] }) {
-  const { value: fieldValue, update: updateField } = useField(fieldName);
-  const [values, setVal] = useState(fieldValue);
-
-  useLayoutEffect(() => {
-    setVal(fieldValue);
-  }, [fieldValue]);
-  return (
-    <Group
-      type="array"
-      className={"array"}
-      values={values}
-      onAddIconClick={() => setVal(s => s.concat(""))}
-      renderItem={(key, val) => {
-        return (
-          <Property
-            onDelete={e => {
-              e.stopPropagation();
-              updateField(values.filter((_, vi) => String(vi) !== key));
-            }}
-            name={String(key)}
-          >
-            {ResolveField({
-              value: val,
-              fieldName: fieldName.concat(String(key)),
-              onBlur: (e, v) => {
-                updateField(v, [key]);
-              }
-            })}
-          </Property>
-        );
-      }}
-    ></Group>
-  );
-}
-
-function TreeRenderer({ value }) {
-  const queue = Object.entries(value).map((el:any)=>[el[0] as string, {...el[0], path: []}] as const)
-  const list = [];
+type Item = {
+  key: string;
+  pathKey: string;
+  title: string;
+  type: "map" | "list" | "prop";
+  path: string[];
+  parent: string[];
+  value?: any;
+};
+function getList(value: Record<string, any>, expanded: Set<string>) {
+  const queue = Object.entries(value)
+    .map(mapFn([]))
+    .sort(sortFn);
+  const list = [] as Item[];
   while (queue.length !== 0) {
-    const [key, item] = queue.pop();
+    const [key, item, parentPath] = queue.pop();
+    const isPropObject = isObject(item);
+    const isPropArray = Array.isArray(item);
+    const path = parentPath.concat(key);
+    const k = path.join(".");
 
-    if(Array.isArray(item)) {
+    if (isPropArray || isPropObject) {
+      const children = Object.entries(item);
+      const title = isPropObject
+        ? objWrap(children.length)
+        : arrayWrap(children.length);
 
-    } else if(isObject(item)) {
-
+      list.push({
+        key: key,
+        pathKey: k,
+        title: title,
+        type: isPropObject ? "map" : "list",
+        path: path,
+        parent: parentPath
+      });
+      if (expanded.has(k)) {
+        const next = children.map(mapFn(path)).sort(sortFn);
+        queue.push(...next);
+      }
     } else {
-      list.push(<Field changeable={true} onBlur={onBlur} value={value} posType="value" />)
+      list.push({
+        pathKey: k,
+        key,
+        title: key,
+        type: "prop",
+        path,
+        parent: parentPath,
+        value: item
+      });
     }
   }
+  return list;
 }
 
-let input;
-if (Array.isArray(value)) {
-  input = <ArrayField fieldName={fieldName} />;
-} else if (isObject(value)) {
-  input = <ObjectField fieldName={fieldName} />;
-} else {
-  input = (
- 
+function Property2({
+  onDelete = null,
+  onAddIconClick = null,
+  name,
+  children,
+  depth,
+  ...props
+}) {
+  return (
+    <div
+      role="button"
+      className="row"
+      style={{
+        paddingLeft: 40 + depth * 20,
+        display: "flex",
+        alignItems: "center",
+        position: "relative"
+      }}
+      {...props}
+    >
+      <Button
+        style={{ position: "absolute", left: 0 }}
+        tabIndex={1}
+        title="Delete property"
+        onClick={onDelete}
+      >
+        <CloseIcon />
+      </Button>
+      {name}
+      <span className="colon">:</span>
+      {children}
+      {onAddIconClick && (
+        <Button
+          style={{
+            position: "absolute",
+            left: 20
+          }}
+          onClick={onAddIconClick}
+          tabIndex={1}
+          title="Delete property"
+        >
+          <PlusIcon />
+        </Button>
+      )}
+    </div>
   );
 }
+
+function useExpanded() {
+  const [expanded, setExpanded] = useState(new Set<string>());
+  const toggleExpanded = (key: string[]) => {
+    setExpanded(s => {
+      const k = key.join(".");
+      if (s.has(k)) {
+        s.delete(k);
+      } else {
+        s.add(k);
+      }
+      return new Set(s);
+    });
+  };
+  return [expanded, { toggleExpanded }] as const;
+}
+
+function ObjectField({ updateField, el, onDelete, toggleExpanded }) {
+  const [hasAdder, setHasAdder] = useState(false);
+  return (
+    <>
+      <Property2
+        onDelete={onDelete}
+        onClick={() => toggleExpanded(el.path)}
+        name={el.key}
+        depth={el.parent.length}
+        onAddIconClick={e => {
+          e.stopPropagation();
+          setHasAdder(true);
+        }}
+      >
+        <span className="grey">{el.title}</span>
+      </Property2>
+      {hasAdder && (
+        <FieldAdder
+          style={{
+            paddingLeft: 20 + el.path.length * 20
+          }}
+          onBlur={(key, v) => {
+            if (key) {
+              updateField(el.path.concat(key), () => v);
+            }
+            setHasAdder(false);
+          }}
+        />
+      )}
+    </>
+  );
+}
+
+function TreeRenderer(props) {
+  const [expanded, { toggleExpanded }] = useExpanded();
+  const { value, update: updateField, dropPath } = useField2();
+  const list = getList(value, expanded);
+  return (
+    <>
+      {list.map(el => {
+        const onDelete = e => {
+          e.stopPropagation();
+          e.preventDefault();
+          dropPath(el.path);
+        };
+        if (el.type === "prop") {
+          return (
+            <Property2
+              key={el.pathKey}
+              onDelete={onDelete}
+              name={el.title}
+              depth={el.parent.length}
+            >
+              <Field
+                changeable
+                value={el.value}
+                posType="value"
+                onBlur={(e, v) => {
+                  updateField(el.path, () => v);
+                }}
+              />
+            </Property2>
+          );
+        } else if (el.type == "map" || el.type == "list") {
+          if (el.type === "map") {
+            return (
+              <ObjectField
+                key={el.pathKey}
+                el={el}
+                updateField={updateField}
+                onDelete={onDelete}
+                toggleExpanded={toggleExpanded}
+              />
+            );
+          }
+          return (
+            <Property2
+              key={el.pathKey}
+              onDelete={onDelete}
+              onClick={() => toggleExpanded(el.path)}
+              name={el.key}
+              depth={el.parent.length}
+              onAddIconClick={e => {
+                e.stopPropagation();
+                updateField(el.path, s => s.concat(""));
+              }}
+            >
+              <span className="grey">{el.title}</span>
+            </Property2>
+          );
+        }
+        return;
+      })}
+    </>
+  );
+}
+//
 
 export function Json({ value }) {
   return (
-    <div className="json-editor">
+    <div className="json-editor" style={{ padding: 20 }}>
       <FieldProvider initialValue={value}>
-        {ResolveField({
-          value: value
-        })}
+        <TreeRenderer value={value as any} />
       </FieldProvider>
     </div>
   );
