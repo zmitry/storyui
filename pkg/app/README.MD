@@ -1,7 +1,7 @@
 <div align="center">
   <h1>
     <br/>
-   <img src="https://github.com/zmitry/storyui/blob/master/logo.svg">
+   <img src="https://github.com/zmitry/storyui/blob/master/pkg/app/logo.svg">
     <br />
     Ui for stories
     <br />
