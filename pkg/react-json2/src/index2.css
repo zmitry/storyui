@@ -1,46 +1,4 @@
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-/* Remove default padding */
-ul[class],
-ol[class] {
-  padding: 0;
-}
-
-/* Remove default margin */
-body,
-h1,
-h2,
-h3,
-h4,
-p,
-ul[class],
-ol[class],
-li,
-figure,
-figcaption,
-blockquote,
-dl,
-dd {
-  margin: 0;
-}
-
-body {
-  min-height: 100vh;
-  scroll-behavior: smooth;
-  text-rendering: optimizeSpeed;
-  line-height: 1.5;
-}
-
-input,
-button,
-textarea,
-select {
-  font: inherit;
-}
+@import "./reset.css";
 
 /* styles */
 
@@ -49,18 +7,20 @@ select {
 }
 
 :root {
-  --green: #690;
+  --green: rgb(21, 133, 15);
   --red: #bd6476;
   --blue: #07a;
-  --grey: rgb(109, 109, 109);
+  --grey: hsl(0, 0%, 45%);
   --grey-dark: hsla(0, 0%, 90%, 1);
   --grey-light: hsla(0, 0%, 92%);
   --action-red: hsla(0, 0%, 90%, 1);
   --action-green: #690;
+  --color-icon: var(--grey);
+
   --height: 20px;
 }
 .json-editor .value {
-  color: var(--blue);
+  color: var(--green);
 }
 
 .json-editor .name {
@@ -69,10 +29,24 @@ select {
 
 .json-editor input {
   border: none;
-  outline: none;
   max-height: 25px;
   color: inherit;
-  background: inherit;
+  background: unset;
+}
+
+input:placeholder-shown {
+  background: yellow;
+  border: 1px solid #ccc;
+}
+
+input[type="text"] {
+  min-width: 2ch;
+  max-width: 40ch;
+}
+
+input[type="text"]:focus {
+  min-width: 2ch;
+  max-width: 100%;
 }
 
 .json-editor .number.value {
@@ -83,7 +57,7 @@ select {
   height: var(--height);
   padding: 0;
   margin: 0;
-  border-radius: 5px;
+  border-radius: 3px;
   outline: 0;
   -webkit-appearance: none;
   border: none;
@@ -93,51 +67,81 @@ select {
   justify-content: center;
   align-items: center;
   background: inherit;
+  cursor: pointer;
+  color: var(--color-icon);
 }
+
 .icon-button svg {
   height: 100%;
   width: 100%;
 }
 
-.json-editor .icon-button:active,
-.json-editor .icon-button:focus {
-  box-shadow: inset 0 0 3px var(--blue);
-}
 .grey {
-  color: hsl(0, 0%, 45%);
+  color: var(--grey);
 }
 
-.row .icon-button {
-  opacity: 0;
+.row .type-select-wrapper {
+  opacity: 0.17;
 }
 
+.row:focus-within .type-select-wrapper,
+.row:hover .type-select-wrapper {
+  opacity: 1;
+}
+.row:hover .type-select-wrapper,
+.row:focus-within .type-select-wrapper,
+.row:focus .type-select-wrapper,
 .row:focus-within,
 .row:focus,
 .row:hover {
-  background: hsla(0, 0%, 95%, 1);
+  background: hsla(0, 0%, 96%, 1);
 }
 
-.row:focus-within .icon-button,
-.row:focus .icon-button,
-.row:hover .icon-button {
-  display: inline;
-  opacity: 1;
-  background: inherit;
+.row {
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+.json-editor *:focus {
+  outline-width: 3px;
+  outline-style: solid;
+  outline-color: rgba(21, 156, 228, 0.4);
+  outline-offset: 0;
 }
 
 .type-select {
-  background: white;
   border: none;
-  box-shadow: 0 0 2px var(--grey);
-  width: 15px;
-  color: inherit;
-  background: inherit;
+  margin: 0;
+  background: none;
+  -webkit-appearance: none;
+  box-shadow: none;
+  color: black;
+  width: 23px;
+  font-family: "Lucida Console", Monaco, monospace;
 }
 
-input[type="number"]:focus,
-input[type="number"]:hover,
-input[type="string"]:focus,
-input[type="string"]:hover {
+.type-select-wrapper {
+  background: white;
+}
+
+input:hover {
   box-shadow: 0px 0px 5px 0px #979797de;
-  border: 1px solid #ccc !important;
+}
+
+.checkbox-label:focus-within {
+  outline-style: solid;
+  outline: -webkit-focus-ring-color auto 5px;
+  position: relative;
+}
+
+.checkbox-label {
+  position: relative;
+  color: var(--blue);
+}
+.checkbox-label input[type="checkbox"] {
+  outline: none;
+  position: absolute;
+  opacity: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
 }

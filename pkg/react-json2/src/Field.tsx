@@ -1,193 +1,230 @@
-import React, {
-  useState,
-  useRef,
-  createContext,
-  useContext,
-  forwardRef
-} from "react";
+import React, { useState, forwardRef, useMemo } from "react";
 import upd from "lodash/update";
+import { SettingsIcon } from "./Button";
+import { TextField, BoolField, NumberField } from "./Fields";
+import { JsonField, Components } from "./types";
+import { useMap } from "./useMap";
 
-const FieldContext = createContext({
-  value: null,
-  update: null
-} as any);
+const mapFn = (parentPath = []) => (el: any) =>
+  [el[0] as string, el[1], parentPath] as const;
 
-export function FieldProvider({ initialValue, children }) {
-  const [value, update] = useState(initialValue);
+const sortFn = (a, b) => {
+  return String(b).localeCompare(String(a), undefined, { numeric: true });
+};
 
-  return (
-    <FieldContext.Provider
-      value={{
-        value,
-        update
-      }}
-    >
-      {children}
-    </FieldContext.Provider>
-  );
-}
+export type Item = {
+  key: string;
+  pathKey: string;
+  type: "map" | "list" | "prop";
+  path: string[];
+  parent: string[];
+  value?: any;
+  childrenLength?: number;
+  field?: JsonField;
+};
+function getList(
+  value: Record<string, any>,
+  expanded: Set<string>,
+  getField: (item, key, path, value) => JsonField
+) {
+  const queue = [] as Array<[string, any, any[]]>;
 
-function deletePropertyPath(obj, path) {
-  if (!obj || !path) {
-    return;
+  function insert(items, path = []) {
+    const next = items.map(mapFn(path)).sort(sortFn);
+    queue.push(...next);
   }
+  insert(Object.entries(value));
+  const list = [] as Item[];
+  while (queue.length !== 0) {
+    const [key, item, parentPath] = queue.pop();
+    const path = parentPath.concat(key);
+    const k = path.join(".");
+    const matchedComponent = getField(item, key, path, value);
 
-  for (var i = 0; i < path.length - 1; i++) {
-    obj = obj[path[i]];
+    if (!matchedComponent) {
+      throw new Error("no matched component");
+    }
 
-    if (typeof obj === "undefined") {
-      return;
+    if (matchedComponent.name === "map" || matchedComponent.name === "list") {
+      const children = Object.entries(item);
+
+      list.push({
+        key: key,
+        pathKey: k,
+        type: matchedComponent.name,
+        path: path,
+        parent: parentPath,
+        value: item,
+        childrenLength: children.length,
+      });
+      if (expanded.has(k)) {
+        insert(children, path);
+      }
+    } else {
+      list.push({
+        pathKey: k,
+        key,
+        type: "prop",
+        path,
+        parent: parentPath,
+        value: item,
+        field: matchedComponent,
+      });
     }
   }
-
-  Reflect.deleteProperty(obj, path.pop());
+  return list;
 }
 
-export function useField2() {
-  const { value, update } = useContext(FieldContext);
+export function useField(initialValue, expanded, components: Components) {
+  const [value, update] = useState(initialValue);
+  const [, keyToTypeMapActions] = useMap({} as Record<string, string>);
+  const componentsMap = useMemo(() => {
+    return new Map(components.map((el) => [el.name, el]));
+  }, [components]);
 
+  const getField = (item: any, key: string, path: string[], value: any) => {
+    const mappedTypeName = keyToTypeMapActions.get(path.join("."));
+    if (mappedTypeName) {
+      return componentsMap.get(mappedTypeName);
+    }
+    return components.find((el) => el.isType(item, key, path, value));
+  };
+  const list = getList(value, expanded, getField);
   return {
     value: value,
+    list,
+    getField: (name: string) => componentsMap.get(name),
+    getType: (path: string) => keyToTypeMapActions.get(path),
+    getFieldForPath: (path: string) =>
+      componentsMap.get(keyToTypeMapActions.get(path)),
+    updateType: (path: string, newType: string) => {
+      keyToTypeMapActions.set(path, newType);
+    },
     update: (p = [], newFieldValue) => {
       const v2 = upd({ ...value }, p, newFieldValue);
       return update(v2);
     },
-    dropPath(path) {
-      deletePropertyPath(value, path);
-      update({ ...value });
+    dropPath(parentPath, key) {
+      const updateField = (v) => {
+        if (Array.isArray(v)) {
+          return v.filter((_, i) => i !== Number(key));
+        }
+        Reflect.deleteProperty(v, key);
+        return v;
+      };
+      let v;
+      if (parentPath.length === 0) {
+        v = updateField(value);
+      } else {
+        v = upd(value, parentPath, updateField);
+      }
+
+      update({ ...v });
     },
     updateKey: (newKeyValue, key, path) => {
-      return update(
-        upd({ ...value }, path, ({ [key]: v, ...obj }) => {
-          return { [newKeyValue]: v, ...obj };
-        })
-      );
-    }
-  };
-}
-
-export function FieldAdder({ onBlur, ...props }) {
-  let v;
-  return (
-    <span className="adder-group" {...props}>
-      <Field
-        changeable={false}
-        value=""
-        posType="name"
-        defaultEditable={true}
-        onBlur={(e, val) => {
-          v = val;
-        }}
-        className="adder input"
-      />
-      :
-      <SelectType />
-      <button
-        onClick={() => {
-          onBlur(v, "");
-        }}
-      >
-        ok
-      </button>
-    </span>
-  );
-}
-
-const SelectType = forwardRef((props, ref) => {
-  return (
-    <select className="type-select" ref={ref as any} {...props}>
-      <option label="text">text</option>
-      <option label="number">number</option>
-      <option label="select">select</option>
-      <option label="checkbox">checkbox</option>
-      <option label="search">search</option>
-      <option label="date">date</option>
-      <option label="map">map</option>
-      <option label="array">array</option>
-    </select>
-  );
-});
-export function Field({
-  value,
-  posType,
-  before = null,
-  className = "",
-  onBlur = null,
-  defaultEditable = false,
-  changeable = false
-}) {
-  const [editable, setEditable] = useState(!!value);
-  const [type, setType] = useState(typeof value as any);
-
-  const [val, setValue] = useState(value);
-  const ref = useRef(null);
-  const selectTargetRef = useRef(null);
-
-  const classNameComposed = [posType, type, className].join(" ");
-  // useLayoutEffect(() => {
-  //   if (ref.current) {
-  //     ref.current.focus();
-  //     ref.current.select();
-  //   }
-  // }, [editable]);
-  const onBlurInternal = e => {
-    e.preventDefault();
-    if (!selectTargetRef.current) {
-      if (ref.current !== e.relatedTarget) {
-        // setEditable(false);
-        onBlur && onBlur(e, val);
+      const updateKey = ({ [key]: v, ...obj }) => {
+        return { [newKeyValue]: v, ...obj };
+      };
+      if (path.length === 0) {
+        return update(updateKey(value));
       }
-    } else if (
-      selectTargetRef.current &&
-      selectTargetRef.current !== e.relatedTarget &&
-      ref.current !== e.relatedTarget
-    ) {
-      // setEditable(false);
-      onBlur && onBlur(e, val);
-    }
+      return update(upd({ ...value }, path, updateKey));
+    },
   };
+}
 
-  if (editable) {
+export const SelectType = forwardRef(
+  (
+    {
+      components,
+      ...props
+    }: React.HtmlHTMLAttributes<HTMLSelectElement> & { components: Components },
+    ref
+  ) => {
+    const items = components.filter(
+      (el) => el.name !== "fallback" && el.name !== "null"
+    );
     return (
-      <span
-        onClick={e => {
-          ref.current.select();
-        }}
-        className={classNameComposed + " editable"}
-        onBlur={onBlurInternal}
-      >
-        <span> </span>
-        <input
-          size={Math.min(Math.max(val.length, 3), 20)}
-          ref={ref}
-          value={val}
-          checked={type === "checkbox" ? val : undefined}
-          onChange={e => {
-            if (type === "checkbox") {
-              setValue(e.target.checked);
-            } else {
-              setValue(e.target.value);
-            }
-          }}
-          style={{ maxWidth: 3 + String(val).length + "ch" }}
-          type={type}
-          onKeyDown={e => {
-            if (e.which == 13) {
-              onBlurInternal(e);
-            }
+      <div className="type-select-wrapper">
+        <SettingsIcon
+          style={{
+            position: "absolute",
+            pointerEvents: "none",
+            color: "var(--color-icon)",
+            background: "inherit",
           }}
         />
-      </span>
+        <select {...props} className="type-select" value={""} ref={ref as any}>
+          <option disabled value="">
+            Actions
+          </option>
+          <option label="🗑️ Delete" value="delete" />
+          <option label="Duplicate" value="duplicate" />
+          <optgroup label="convert to">
+            <option key={"auto"} label={"auto"} value={"convert.auto"}></option>
+            {items.map((el) => {
+              return (
+                <option
+                  key={el.name}
+                  label={el.name}
+                  value={"convert." + el.name}
+                >
+                  {el.name}
+                </option>
+              );
+            })}
+          </optgroup>
+          {/* <optgroup label="insert after">
+            {items.map((el) => {
+              return (
+                <option
+                  key={el.name}
+                  label={el.name}
+                  value={"insert." + el.name}
+                >
+                  {el.name}
+                </option>
+              );
+            })}
+          </optgroup> */}
+        </select>
+      </div>
     );
   }
+);
+
+export function Field({ value, className = "", onBlur = null }) {
+  const type = typeof value;
+  if (type === "string") {
+    return (
+      <TextField defaultValue={value} onBlur={onBlur} className={className} />
+    );
+  }
+  return "not implemented" as any;
+}
+
+const id = (v) => v;
+export function JsonValueInput({
+  value,
+  className = "",
+  onBlur = null,
+  field,
+}: {
+  value: any;
+  field: JsonField;
+  className?: string;
+  onBlur: any;
+}) {
+  const InputFieldComponent = field.component;
+  const { parse = id, format = id, ...rest } = field.props || {};
   return (
-    <span className={classNameComposed} onClick={v => setEditable(true)}>
-      {before}
-      {val === "" || val === undefined || val === null ? (
-        <span className="null-value">{JSON.stringify(val)}</span>
-      ) : (
-        String(val)
-      )}
-    </span>
+    <InputFieldComponent
+      {...rest}
+      defaultValue={format(value)}
+      className={className}
+      onBlur={(e, v) => {
+        onBlur(e, parse(v));
+      }}
+    />
   );
 }
