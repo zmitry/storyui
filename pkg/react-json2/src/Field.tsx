@@ -1,9 +1,12 @@
-import React, { useState, forwardRef, useMemo } from "react";
+import React, { useState, forwardRef, useMemo, useRef } from "react";
 import upd from "lodash/update";
 import { SettingsIcon } from "./Button";
 import { TextField, BoolField, NumberField } from "./Fields";
 import { JsonField, Components } from "./types";
 import { useMap } from "./useMap";
+import get from "lodash/get";
+import { isObjectLike } from "./utils";
+import { useSet } from "./useSet";
 
 const mapFn = (parentPath = []) => (el: any) =>
   [el[0] as string, el[1], parentPath] as const;
@@ -11,6 +14,12 @@ const mapFn = (parentPath = []) => (el: any) =>
 const sortFn = (a, b) => {
   return String(b).localeCompare(String(a), undefined, { numeric: true });
 };
+function isJsonLike(d: any) {
+  return (
+    typeof d === "string" &&
+    (isObjectLike(d, "{", "}") || isObjectLike(d, "[", "]"))
+  );
+}
 
 export type Item = {
   key: string;
@@ -45,83 +54,140 @@ function getList(
       throw new Error("no matched component");
     }
 
+    let listItem: Item = {
+      pathKey: k,
+      key,
+      type: "prop",
+      path,
+      parent: parentPath,
+      value: item,
+      field: matchedComponent,
+    };
+    list.push(listItem);
     if (matchedComponent.name === "map" || matchedComponent.name === "list") {
       const children = Object.entries(item);
-
-      list.push({
-        key: key,
-        pathKey: k,
-        type: matchedComponent.name,
-        path: path,
-        parent: parentPath,
-        value: item,
-        childrenLength: children.length,
-      });
+      listItem.childrenLength = children.length;
+      listItem.type = matchedComponent.name;
+      listItem.field = undefined;
       if (expanded.has(k)) {
         insert(children, path);
       }
-    } else {
-      list.push({
-        pathKey: k,
-        key,
-        type: "prop",
-        path,
-        parent: parentPath,
-        value: item,
-        field: matchedComponent,
-      });
     }
   }
   return list;
 }
 
-export function useField(initialValue, expanded, components: Components) {
-  const [value, update] = useState(initialValue);
+export function useField(initialValue, components: Components, isField) {
+  const [expanded, { toggle: toggleExpanded, add: addExpanded }] = useSet(
+    new Set<string>()
+  );
+
   const [, keyToTypeMapActions] = useMap({} as Record<string, string>);
   const componentsMap = useMemo(() => {
     return new Map(components.map((el) => [el.name, el]));
   }, [components]);
+
+  const [value, update] = useState({
+    ...initialValue,
+  });
 
   const getField = (item: any, key: string, path: string[], value: any) => {
     const mappedTypeName = keyToTypeMapActions.get(path.join("."));
     if (mappedTypeName) {
       return componentsMap.get(mappedTypeName);
     }
-    return components.find((el) => el.isType(item, key, path, value));
+    return isField(item, key, path, value);
   };
   const list = getList(value, expanded, getField);
+  function dropPath(parentPath, key) {
+    const updateField = (v) => {
+      if (Array.isArray(v)) {
+        return v.filter((_, i) => i !== Number(key));
+      }
+      Reflect.deleteProperty(v, key);
+      return v;
+    };
+    let v;
+    if (parentPath.length === 0) {
+      v = updateField(value);
+    } else {
+      v = upd(value, parentPath, updateField);
+    }
+
+    update({ ...v });
+  }
+  function updateType(path: string, newType: string) {
+    keyToTypeMapActions.set(path, newType);
+  }
+  const updateField = (p = [], newFieldValue) => {
+    const v2 = upd({ ...value }, p, newFieldValue);
+    return update(v2);
+  };
+  const getType = (path: string) => keyToTypeMapActions.get(path);
   return {
+    toggleExpanded,
+    expanded,
     value: value,
     list,
-    getField: (name: string) => componentsMap.get(name),
-    getType: (path: string) => keyToTypeMapActions.get(path),
-    getFieldForPath: (path: string) =>
-      componentsMap.get(keyToTypeMapActions.get(path)),
-    updateType: (path: string, newType: string) => {
-      keyToTypeMapActions.set(path, newType);
+    onDelete(el: Item) {
+      dropPath(el.parent, el.key);
     },
-    update: (p = [], newFieldValue) => {
-      const v2 = upd({ ...value }, p, newFieldValue);
-      return update(v2);
-    },
-    dropPath(parentPath, key) {
-      const updateField = (v) => {
-        if (Array.isArray(v)) {
-          return v.filter((_, i) => i !== Number(key));
+    onItemAdd(el: Item) {
+      updateField(el.path, (v) => {
+        if (el.type === "map") {
+          return { ...v, "": "" };
         }
-        Reflect.deleteProperty(v, key);
-        return v;
-      };
-      let v;
-      if (parentPath.length === 0) {
-        v = updateField(value);
-      } else {
-        v = upd(value, parentPath, updateField);
-      }
-
-      update({ ...v });
+        return v.concat("");
+      });
+      const newPath = el.path.concat(String(el.childrenLength)).join(".");
+      const type = getType(
+        el.path.concat(String(el.childrenLength - 1)).join(".")
+      );
+      updateType(newPath, type);
+      addExpanded(el.pathKey);
     },
+    onConvertType(el: Item, newType: string) {
+      if (newType === "auto") {
+        updateType(el.pathKey, undefined);
+        if (isJsonLike(el.value)) {
+          try {
+            updateField(el.path, () => {
+              try {
+                return JSON.parse(el.value);
+              } catch (e) {
+                return el.value;
+              }
+            });
+          } catch (e) {
+            console.error("failed to parse");
+          }
+        }
+        return;
+      }
+      updateType(el.pathKey, newType);
+      let fieldType = componentsMap.get(newType);
+      const defaultValue =
+        ((v) => fieldType.defaultValue(v, el.field?.name, el.type)) ||
+        (() => "");
+      updateField(el.path, defaultValue);
+    },
+    onDuplicate(el: Item) {
+      const parentValue = get(value, el.parent);
+      let newKey = el.key + "_copy";
+      if (Array.isArray(parentValue)) {
+        newKey = String(parentValue.length);
+      }
+      let path = el.parent.concat(newKey);
+      updateField(path, () => el.value);
+    },
+    updateField,
+    updateType,
+    getType: (path: string) => keyToTypeMapActions.get(path),
+    dropPath,
     updateKey: (newKeyValue, key, path) => {
+      if (newKeyValue === key) {
+        return;
+      }
       const updateKey = ({ [key]: v, ...obj }) => {
         return { [newKeyValue]: v, ...obj };
       };
@@ -142,7 +208,7 @@ export const SelectType = forwardRef(
     ref
   ) => {
     const items = components.filter(
-      (el) => el.name !== "fallback" && el.name !== "null"
+      (el) => el.name !== "fallback" && el.name !== "null" && !el.hidden
     );
     return (
       <div className="type-select-wrapper">
@@ -174,19 +240,6 @@ export const SelectType = forwardRef(
               );
             })}
           </optgroup>
-          {/* <optgroup label="insert after">
-            {items.map((el) => {
-              return (
-                <option
-                  key={el.name}
-                  label={el.name}
-                  value={"insert." + el.name}
-                >
-                  {el.name}
-                </option>
-              );
-            })}
-          </optgroup> */}
         </select>
       </div>
     );
@@ -204,27 +257,79 @@ export function Field({ value, className = "", onBlur = null }) {
 }
 
 const id = (v) => v;
+
+function Validate({ children, parse, onBlur }) {
+  const [invalid, setMsg] = useState(false);
+  let ref = useRef(null);
+
+  const onBlurInternal = (event, value) => {
+    try {
+      const res = parse(value);
+      setMsg(false);
+      onBlur(event, res);
+    } catch (e) {
+      ref.current.setCustomValidity(e);
+      setMsg(true);
+      event.preventDefault();
+      if (!invalid) {
+        ref.current.reportValidity();
+        ref.current.focus();
+      }
+    }
+  };
+  return (
+    <div>
+      {children(onBlurInternal, ref)}
+      {invalid && (
+        <span
+          tabIndex={1}
+          aria-label="validation message"
+          style={{ marginLeft: 5 }}
+          onMouseEnter={() => {
+            ref.current.reportValidity();
+          }}
+        >
+          ⚠️
+        </span>
+      )}
+    </div>
+  );
+}
+
 export function JsonValueInput({
   value,
   className = "",
   onBlur = null,
   field,
+  validate,
 }: {
   value: any;
   field: JsonField;
   className?: string;
   onBlur: any;
+  validate?: any;
 }) {
   const InputFieldComponent = field.component;
-  const { parse = id, format = id, ...rest } = field.props || {};
+  const { parse = id, format = id } = field || {};
+  const parseFn = (...args) => {
+    const res = validate ? validate(...args) : undefined;
+    if (res) {
+      throw res;
+    }
+    return parse(res);
+  };
+
   return (
-    <InputFieldComponent
-      {...rest}
-      defaultValue={format(value)}
-      className={className}
-      onBlur={(e, v) => {
-        onBlur(e, parse(v));
-      }}
-    />
+    <Validate parse={parseFn} onBlur={onBlur}>
+      {(onBlurWithValidation, ref) => (
+        <InputFieldComponent
+          {...field.props}
+          ref={ref}
+          defaultValue={format(value)}
+          className={className}
+          onBlur={onBlurWithValidation}
+        />
+      )}
+    </Validate>
   );
 }

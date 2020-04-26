@@ -15,45 +15,7 @@ export function JSONTSTORY() {
   return <JSONTree data={json} />;
 }
 export function JSONStory() {
-  return (
-    <Json
-      value={{
-        file: "",
-        color: "#cccccc",
-        null: null,
-        date: new Date(),
-        number: 1,
-        include: ["src", "types"],
-        compilerOptions: {
-          module: "esnext",
-          lib: ["dom", "esnext"],
-          importHelpers: true,
-          declaration: true,
-          sourceMap: true,
-          rootDir: "./src",
-          strict: true,
-          noImplicitAny: false,
-          downlevelIteration: true,
-          strictNullChecks: false,
-          strictFunctionTypes: true,
-          strictPropertyInitialization: false,
-          noImplicitThis: true,
-          alwaysStrict: true,
-          noUnusedLocals: true,
-          noUnusedParameters: true,
-          noImplicitReturns: true,
-          noFallthroughCasesInSwitch: true,
-          moduleResolution: "node",
-          baseUrl: "./",
-          paths: {
-            "*": ["src/*", "node_modules/*"],
-          },
-          jsx: "react",
-          esModuleInterop: true,
-        },
-      }}
-    />
-  );
+  return <Json value={{}} />;
 }
 
 export function JSONStory2() {

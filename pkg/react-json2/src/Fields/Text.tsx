@@ -37,12 +37,15 @@ export const TextField = forwardRef(function TextField(
 ) {
   const innerRef = useRef(null);
   /* eslint-disable react-hooks/rules-of-hooks */
-  const [value, setValue] = useValue(defaultValue);
+  const [value, setValue] = useState(defaultValue);
   const classNameComposed = [type, className].join(" ");
   const w = value ? (value || "").length : 5;
   const onBlurInternal = (e) => {
     onBlur && onBlur(e, value);
-    e.target.blur();
+  };
+  const onFakeBlurInternal = (e) => {
+    onBlur && onBlur(e, value);
+    innerRef.current.blur();
   };
 
   useLayoutEffect(() => {
@@ -51,11 +54,11 @@ export const TextField = forwardRef(function TextField(
     }
   }, [defaultValue, type]);
 
-  useLayoutEffect(() => {
-    if (!defaultValue) {
-      innerRef.current.focus();
-    }
-  }, [defaultValue]);
+  // useLayoutEffect(() => {
+  //   if (!defaultValue) {
+  //     innerRef.current.focus();
+  //   }
+  // }, [defaultValue]);
   return (
     <input
       name={name}
@@ -69,15 +72,17 @@ export const TextField = forwardRef(function TextField(
       placeholder={placeholder}
       onChange={(e) => {
         setValue(e.target.value);
+        console.log("type: ", type);
         if (type !== "text") {
-          onBlurInternal(e);
+          onFakeBlurInternal(e);
         }
+        innerRef.current.setCustomValidity("");
       }}
       type={type}
       onBlur={onBlurInternal}
       onKeyDown={(e) => {
         if (e.which == 13) {
-          onBlurInternal(e);
+          onFakeBlurInternal(e);
         }
       }}
     />

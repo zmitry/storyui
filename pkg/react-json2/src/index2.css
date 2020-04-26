@@ -9,6 +9,7 @@
 :root {
   --green: rgb(21, 133, 15);
   --red: #bd6476;
+  --red-bg: hsla(348, 40%, 57%, 0.25);
   --blue: #07a;
   --grey: hsl(0, 0%, 45%);
   --grey-dark: hsla(0, 0%, 90%, 1);
@@ -39,6 +40,11 @@ input:placeholder-shown {
   border: 1px solid #ccc;
 }
 
+input:invalid {
+  background: var(--red-bg);
+  border: 1px solid var(--red);
+  outline-color: var(--red-bg) !important;
+}
 input[type="text"] {
   min-width: 2ch;
   max-width: 40ch;
