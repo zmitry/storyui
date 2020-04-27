@@ -1,58 +1,21 @@
 export type JsonField = {
   name: string;
-  isType: (value: any, key: string, path: any, rootValue: any) => boolean;
+  isType?: (value: any, key: string, path: any, rootValue: any) => boolean;
   component?: React.ElementType;
-  props: React.ComponentPropsWithRef<any>;
+  props?: React.ComponentPropsWithRef<any>;
   defaultValue?: (value: any, type: string, groupType: string) => any;
   parse?: any;
   format?: any;
   hidden?: false;
 };
 
-const schema = {
-  size: {
-    kek: {
-      name: { type: "string", defaultValue: () => "hello" },
-    },
-    items: {
-      type: "list",
-      fields: {
-        name: { type: "string" },
-        user: {
-          id: { type: "string" },
-          name: { type: "string" },
-        },
-      },
-    },
-    name: {
-      type: "string",
-      validate(v) {
-        return !v && "is required";
-      },
-    },
-  },
-};
-
 export type JsonField2 = {
   // name: string;
   // isType: (value: any, key: string, path: any, rootValue: any) => boolean;
   component?: React.ElementType;
-  props: React.ComponentPropsWithRef<any>;
+  props?: React.ComponentPropsWithRef<any>;
   parse?: any;
   format?: any;
-};
-
-const convertValue = (newType, prevValue, prevType) => {};
-const isType = () => {};
-type compo = {
-  asf: {
-    path: "users";
-    control: React.ElementType;
-    hidden?: false;
-    props: React.ComponentPropsWithRef<any>;
-    parse?: any;
-    format?: any;
-  };
 };
 
 export type Components = Array<JsonField>;

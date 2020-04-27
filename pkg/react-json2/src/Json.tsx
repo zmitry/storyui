@@ -3,7 +3,7 @@ import { Button, PlusIcon, ExpandButton } from "./Button";
 import { Field, useField, SelectType, JsonValueInput } from "./Field";
 import { Components } from "./types";
 import get from "lodash/get";
-import { defaultFields } from "./defaultFields";
+import { defaultFields, convert, InputField } from "./defaultFields";
 
 const arrayWrap = (val) => `[${val}]`;
 const objWrap = (val) => `{${val}}`;
@@ -51,11 +51,11 @@ function PlainProperty({ depth, children, name, actions, ...props }) {
 
 function TreeRenderer({
   value: initialValue,
-  components,
+  fieldsMap,
   isField,
 }: {
   value: any;
-  components: Components;
+  fieldsMap: Map<string, InputField>;
   isField: any;
 }) {
   const {
@@ -69,7 +69,7 @@ function TreeRenderer({
     onItemAdd,
     expanded,
     toggleExpanded,
-  } = useField(initialValue, components, isField);
+  } = useField(initialValue, fieldsMap, isField);
   return (
     <>
       {list.map((el) => {
@@ -90,6 +90,12 @@ function TreeRenderer({
         const onKeyEdit = (e, v) => {
           updateKey(v, el.key, el.parent);
         };
+        const select = (
+          <SelectType
+            onChange={onActions}
+            components={Object.values(fieldsMap)}
+          />
+        );
         if (el.type === "prop") {
           const isArray = Array.isArray(get(value, el.parent));
           const name = !isArray ? (
@@ -99,9 +105,7 @@ function TreeRenderer({
           );
           return (
             <PlainProperty
-              actions={
-                <SelectType onChange={onActions} components={components} />
-              }
+              actions={select}
               key={el.pathKey}
               name={name}
               depth={el.parent.length}
@@ -122,7 +126,7 @@ function TreeRenderer({
               field={el}
               onAdd={onAdd}
               onKeyEdit={onKeyEdit}
-              menu={<SelectType onChange={onActions} components={components} />}
+              menu={select}
               expander={expandIcon({
                 expanded: expanded.has(el.pathKey),
                 onClick: () => toggleExpanded(el.pathKey),
@@ -172,21 +176,16 @@ function Group({
   );
 }
 
-function isType(item: any, key: string, path: string[], value: any) {
-  const res = defaultFields.find((el) => el.isType(item, key, path, value));
-
-  console.log("res: ", res);
-  return res;
-}
 export function Json({
   value,
   components = defaultFields,
-  isField = isType,
 }: {
   value: any;
   components?: Components;
   isField?: any;
 }) {
+  const { isType, fieldsMap } = convert(components);
+  console.log("fieldsMap: ", fieldsMap);
   return (
     <form
       className="json-editor"
@@ -198,8 +197,8 @@ export function Json({
     >
       <TreeRenderer
         value={value as any}
-        isField={isField}
-        components={components}
+        isField={isType}
+        fieldsMap={fieldsMap}
       />
     </form>
   );

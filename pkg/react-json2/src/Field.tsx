@@ -7,6 +7,7 @@ import { useMap } from "./useMap";
 import get from "lodash/get";
 import { isObjectLike } from "./utils";
 import { useSet } from "./useSet";
+import { InputField } from "./defaultFields";
 
 const mapFn = (parentPath = []) => (el: any) =>
   [el[0] as string, el[1], parentPath] as const;
@@ -77,15 +78,17 @@ function getList(
   return list;
 }
 
-export function useField(initialValue, components: Components, isField) {
+export function useField(
+  initialValue,
+  components: Map<string, InputField>,
+  isField
+) {
   const [expanded, { toggle: toggleExpanded, add: addExpanded }] = useSet(
     new Set<string>()
   );
 
   const [, keyToTypeMapActions] = useMap({} as Record<string, string>);
-  const componentsMap = useMemo(() => {
-    return new Map(components.map((el) => [el.name, el]));
-  }, [components]);
+  const componentsMap = components;
 
   const [value, update] = useState({
     ...initialValue,
@@ -96,7 +99,8 @@ export function useField(initialValue, components: Components, isField) {
     if (mappedTypeName) {
       return componentsMap.get(mappedTypeName);
     }
-    return isField(item, key, path, value);
+    const fieldType = isField(item, key, path, value);
+    return componentsMap.get(fieldType) as any;
   };
   const list = getList(value, expanded, getField);
   function dropPath(parentPath, key) {
@@ -121,6 +125,7 @@ export function useField(initialValue, components: Components, isField) {
   }
   const updateField = (p = [], newFieldValue) => {
     const v2 = upd({ ...value }, p, newFieldValue);
+
     return update(v2);
   };
   const getType = (path: string) => keyToTypeMapActions.get(path);
@@ -158,9 +163,7 @@ export function useField(initialValue, components: Components, isField) {
                 return el.value;
               }
             });
-          } catch (e) {
-            console.error("failed to parse");
-          }
+          } catch (e) {}
         }
         return;
       }
@@ -265,6 +268,7 @@ function Validate({ children, parse, onBlur }) {
   const onBlurInternal = (event, value) => {
     try {
       const res = parse(value);
+
       setMsg(false);
       onBlur(event, res);
     } catch (e) {
@@ -310,13 +314,14 @@ export function JsonValueInput({
   validate?: any;
 }) {
   const InputFieldComponent = field.component;
+
   const { parse = id, format = id } = field || {};
   const parseFn = (...args) => {
     const res = validate ? validate(...args) : undefined;
     if (res) {
       throw res;
     }
-    return parse(res);
+    return parse(...args);
   };
 
   return (
