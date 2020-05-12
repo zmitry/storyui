@@ -28,7 +28,9 @@
   "scripts": {
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",
-    "test": "react-app-rewired test"
+    "test": "react-app-rewired test",
+    "storybook": "start-storybook -p 9009 -s public",
+    "build-storybook": "build-storybook -s public"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -44,5 +46,14 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@babel/core": "^7.9.0",
+    "@storybook/addon-actions": "^6.0.0-alpha.45",
+    "@storybook/addon-links": "^6.0.0-alpha.45",
+    "@storybook/addons": "^6.0.0-alpha.45",
+    "@storybook/preset-create-react-app": "^2.1.1",
+    "@storybook/react": "^6.0.0-alpha.45",
+    "babel-loader": "^8.1.0"
   }
 }

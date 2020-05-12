@@ -1,6 +1,5 @@
 import { css } from "emotion";
-import React, { useEffect, useState } from "react";
-import ErrorBoundary from "react-error-boundary";
+import React, { useState } from "react";
 import {
   EditIcon,
   Frame,
@@ -22,8 +21,6 @@ const classes = {
 };
 
 function ElementContainerTemplate({ children }) {
-  const [hasError, setError] = useState(false);
-
   return (
     <Stack gap={15}>
       <div
@@ -35,22 +32,7 @@ function ElementContainerTemplate({ children }) {
           overflow: "auto",
         }}
       >
-        <ErrorBoundary
-          key={hasError ? Math.random() : "error"}
-          FallbackComponent={() => {
-            useEffect(() => {
-              return () => setError(false);
-            }, []);
-            return null;
-          }}
-          onError={(err) => {
-            console.log(err);
-            setError(true);
-            return "err";
-          }}
-        >
-          {children}
-        </ErrorBoundary>
+        {children}
       </div>
     </Stack>
   );

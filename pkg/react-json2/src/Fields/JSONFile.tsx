@@ -1,12 +1,5 @@
-import React, {
-  useState,
-  useRef,
-  createContext,
-  useLayoutEffect,
-  forwardRef,
-} from "react";
+import React, { forwardRef } from "react";
 import { Merge } from "ts-essentials";
-import { mergeRefs } from "../utils";
 
 function readJsonFile(file: File) {
   var reader = new FileReader();
@@ -69,7 +62,7 @@ export const JSONFileField = forwardRef(function TextField(
       onChange={async (e) => {
         try {
           const result = await Promise.all(
-            [...e.target.files].map(readJsonFile)
+            Array.from(e.target.files).map(readJsonFile)
           );
           if (multiple) {
             onBlur(e, result);

@@ -16,18 +16,18 @@ function useData({ pages }) {
     if (page.config?.nest) {
       linksObj[page.name] = {
         title: basename(page.name).replace(/\.story(.*)$/gi, ""),
-        items: []
+        items: [],
       };
       for (const pageCase of page.cases) {
         pagesArray.push({
           ...pageCase,
           nest: true,
-          framed: page.config?.framed
+          framed: page.config?.framed,
         });
         linksObj[page.name].items.push({
           title: startCase(pageCase.name),
           key: pageCase.name,
-          link: "#page=" + pageCase.name
+          link: "#page=" + pageCase.name,
         });
       }
     } else {
@@ -35,14 +35,14 @@ function useData({ pages }) {
       linksObj[page.name] = {
         title: startCase(basename(page.name).replace(/\.story(.*)$/gi, "")),
         key: page.name,
-        link: "#page=" + page.name
+        link: "#page=" + page.name,
       };
     }
   }
   const links = Object.values(linksObj);
   return {
     links,
-    pagesArray
+    pagesArray,
   };
 }
 
@@ -69,7 +69,7 @@ const classes = {
     @media only screen and (min-width: 1300px) {
       max-width: 83%;
     }
-  `
+  `,
 };
 
 const Render = ({ children }) => children();
@@ -89,9 +89,9 @@ export default function StoryController(props) {
   const [iframe] = useQueryState("iframe", "off");
   const pageData =
     pagesArray
-      .map(el => (el.cases ? [el.cases, el] : el))
+      .map((el) => (el.cases ? [el.cases, el] : el))
       .flat(2)
-      .find(el => el.name === page) || pagesArray[0];
+      .find((el) => el.name === page) || pagesArray[0];
   const Wrapper = props.wrapper;
 
   const Cmp = Wrapper(
@@ -122,7 +122,7 @@ export default function StoryController(props) {
       layoutChildren={
         <SidePanel
           selected={page}
-          onClick={d => {
+          onClick={(d) => {
             setPage((d as any).key, { method: "push" });
           }}
           tree={links as any}
@@ -142,14 +142,7 @@ export default function StoryController(props) {
       }
       docsTab={
         component &&
-        showDocs && (
-          <div
-            className={docsUi}
-            dangerouslySetInnerHTML={{
-              __html: GenerateHtml(component)
-            }}
-          />
-        )
+        showDocs && <div className={docsUi}>{GenerateHtml(component)}</div>
       }
     >
       <Layout>

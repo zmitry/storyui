@@ -1,21 +1,8 @@
 import React from "react";
 import { Json } from "./Json";
-import JSONTree from "react-json-tree";
-
-export function JSONTSTORY() {
-  // Inside a React component:
-  const json = {
-    array: [1, 2, 3],
-    bool: true,
-    object: {
-      foo: "bar",
-    },
-  };
-
-  return <JSONTree data={json} />;
-}
 export function JSONStory() {
-  return <Json value={{}} />;
+  const [value, onChange] = React.useState({ name: "sd" });
+  return <Json value={value} onChange={onChange} />;
 }
 
 export function JSONStory2() {

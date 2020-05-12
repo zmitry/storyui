@@ -11,7 +11,6 @@
     "@types/react-dom": "^16.9.6",
     "@types/react-textarea-autosize": "^4.3.5",
     "import-all.macro": "*",
-    "marked": "^0.8.2",
     "react-error-boundary": "^1.2.5",
     "react-textarea-autosize": "^7.1.2",
     "use-location-state": "^2.3.1"

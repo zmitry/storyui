@@ -79,20 +79,20 @@ function getList(
 }
 
 export function useField(
-  initialValue,
+  value,
   components: Map<string, InputField>,
-  isField
+  isField,
+  initialFieldMapping = {},
+  update
 ) {
   const [expanded, { toggle: toggleExpanded, add: addExpanded }] = useSet(
     new Set<string>()
   );
 
-  const [, keyToTypeMapActions] = useMap({} as Record<string, string>);
+  const [fieldMapping, keyToTypeMapActions] = useMap(
+    initialFieldMapping as Record<string, string>
+  );
   const componentsMap = components;
-
-  const [value, update] = useState({
-    ...initialValue,
-  });
 
   const getField = (item: any, key: string, path: string[], value: any) => {
     const mappedTypeName = keyToTypeMapActions.get(path.join("."));
@@ -130,6 +130,7 @@ export function useField(
   };
   const getType = (path: string) => keyToTypeMapActions.get(path);
   return {
+    fieldMapping,
     toggleExpanded,
     expanded,
     value: value,
@@ -206,13 +207,14 @@ export const SelectType = forwardRef(
   (
     {
       components,
+
       ...props
     }: React.HtmlHTMLAttributes<HTMLSelectElement> & { components: Components },
     ref
   ) => {
-    const items = components.filter(
-      (el) => el.name !== "fallback" && el.name !== "null" && !el.hidden
-    );
+    const items = components.filter((el) => {
+      return el.name !== "fallback" && el.name !== "null" && !el.hidden;
+    });
     return (
       <div className="type-select-wrapper">
         <SettingsIcon
@@ -302,11 +304,13 @@ function Validate({ children, parse, onBlur }) {
 
 export function JsonValueInput({
   value,
+  name,
   className = "",
   onBlur = null,
   field,
   validate,
 }: {
+  name: string;
   value: any;
   field: JsonField;
   className?: string;
@@ -329,6 +333,7 @@ export function JsonValueInput({
       {(onBlurWithValidation, ref) => (
         <InputFieldComponent
           {...field.props}
+          name={name}
           ref={ref}
           defaultValue={format(value)}
           className={className}

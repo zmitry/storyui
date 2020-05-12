@@ -1,4 +1,4 @@
-import marked from "marked";
+import React from "react";
 
 function generateDesciption(description) {
   return description + "\n";
@@ -34,32 +34,44 @@ function generateProp(propName, prop) {
     (prop.required ? "*" : "") +
     (prop.tsType ? ":" + generatePropType(prop.tsType) : "");
   const description = prop.description ? prop.description : "";
-  return `|${name}|${
-    prop.defaultValue ? generatePropDefaultValue(prop.defaultValue) : ""
-  }|${description}|`;
+  return {
+    name: name,
+    defaultValue: prop.defaultValue
+      ? generatePropDefaultValue(prop.defaultValue)
+      : "",
+    description,
+  };
 }
 
 function generateProps(props) {
-  if (!props) return "\n";
+  if (!props) return <div />;
   return (
-    `|Name|Default|Description|
-  |---|---|---|\n` +
-    Object.keys(props)
-      .sort()
-      .map(function(propName) {
-        return generateProp(propName, props[propName]);
-      })
-      .join("\n")
+    <table>
+      <tr>
+        <th>Name</th>
+        <th>Default</th>
+        <th>Description</th>
+      </tr>
+      <tbody>
+        {Object.keys(props)
+          .sort()
+          .map(function(propName) {
+            return generateProp(propName, props[propName]);
+          })
+          .map((el) => {
+            return (
+              <tr>
+                <td>{el.name}</td>
+                <td>{el.defaultValue}</td>
+                <td>{el.description}</td>
+              </tr>
+            );
+          })}
+      </tbody>
+    </table>
   );
 }
 
-export function generateMarkdown(reactAPI) {
-  const markdownString =
-    generateDesciption(reactAPI.description) + "\n" + generateProps(reactAPI.props);
-  return markdownString;
-}
-
 export function GenerateHtml(reactAPI) {
-  const t = marked(generateMarkdown(reactAPI));
-  return t;
+  return generateProps(reactAPI.props);
 }

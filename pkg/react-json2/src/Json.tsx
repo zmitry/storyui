@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import { Button, PlusIcon, ExpandButton } from "./Button";
 import { Field, useField, SelectType, JsonValueInput } from "./Field";
 import { Components } from "./types";
@@ -24,14 +24,13 @@ function expandIcon({ expanded, onClick }) {
 function PlainProperty({ depth, children, name, actions, ...props }) {
   return (
     <div
-      className="row"
-      style={{
-        paddingLeft: 60 + depth * 20,
-        display: "flex",
-        alignItems: "center",
-        position: "relative",
-      }}
+      style={
+        {
+          "--depth": depth,
+        } as any
+      }
       {...props}
+      className={"row " + props.className}
     >
       <div
         style={{
@@ -53,13 +52,18 @@ function TreeRenderer({
   value: initialValue,
   fieldsMap,
   isField,
+  onChange,
+  initialFieldMapping,
 }: {
   value: any;
   fieldsMap: Map<string, InputField>;
   isField: any;
+  onChange;
+  initialFieldMapping: any;
 }) {
   const {
     value,
+    fieldMapping,
     list,
     updateField,
     updateKey,
@@ -69,7 +73,15 @@ function TreeRenderer({
     onItemAdd,
     expanded,
     toggleExpanded,
-  } = useField(initialValue, fieldsMap, isField);
+  } = useField(
+    initialValue,
+    fieldsMap,
+    isField,
+    initialFieldMapping,
+    (value) => {
+      onChange(value, fieldMapping);
+    }
+  );
   return (
     <>
       {list.map((el) => {
@@ -93,7 +105,7 @@ function TreeRenderer({
         const select = (
           <SelectType
             onChange={onActions}
-            components={Object.values(fieldsMap)}
+            components={Array.from(fieldsMap.values())}
           />
         );
         if (el.type === "prop") {
@@ -111,6 +123,7 @@ function TreeRenderer({
               depth={el.parent.length}
             >
               <JsonValueInput
+                name={el.pathKey}
                 value={el.value}
                 field={el.field}
                 className="value"
@@ -159,6 +172,7 @@ function Group({
       : arrayWrap(field.childrenLength);
   return (
     <PlainProperty
+      className="group"
       actions={menu}
       name={
         <>
@@ -179,25 +193,31 @@ function Group({
 export function Json({
   value,
   components = defaultFields,
+  onChange,
+  fieldMapping,
 }: {
   value: any;
   components?: Components;
   isField?: any;
+  onChange?: (value) => void;
+  fieldMapping?: Record<string, string>;
 }) {
   const { isType, fieldsMap } = convert(components);
-  console.log("fieldsMap: ", fieldsMap);
+  const ref = useRef(null);
   return (
     <form
+      ref={ref}
       className="json-editor"
-      style={{ padding: 20 }}
       noValidate
       onSubmit={(e) => {
         e.preventDefault();
       }}
     >
       <TreeRenderer
+        initialFieldMapping={fieldMapping}
         value={value as any}
         isField={isType}
+        onChange={onChange}
         fieldsMap={fieldsMap}
       />
     </form>

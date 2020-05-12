@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useRef,
-  createContext,
-  useLayoutEffect,
-  forwardRef,
-} from "react";
+import React, { useState, useRef, useLayoutEffect, forwardRef } from "react";
 import { Merge } from "ts-essentials";
 import { mergeRefs } from "../utils";
 

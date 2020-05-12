@@ -9,6 +9,7 @@ export const SelectField = forwardRef(function TextField(
   {
     defaultValue,
     onBlur,
+    name,
     options,
   }: Merge<
     SelectProps,
@@ -23,6 +24,7 @@ export const SelectField = forwardRef(function TextField(
 ) {
   return (
     <select
+      name={name}
       ref={ref}
       onChange={(e) => {
         onBlur(e, e.target.value);

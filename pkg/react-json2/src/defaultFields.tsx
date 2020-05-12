@@ -1,13 +1,13 @@
-import { Components, JsonField } from "./types";
 import {
-  NullField,
-  JSONFileField,
-  TextField,
   BoolField,
-  SelectField,
+  JSONFileField,
+  NullField,
   NumberField,
+  SelectField,
+  TextField,
 } from "./Fields";
-import { isColor, isValidDate, isObject } from "./utils";
+import { Components, JsonField } from "./types";
+import { isColor, isObject, isValidDate } from "./utils";
 
 export const defaultFields: Components = [
   {
@@ -81,28 +81,6 @@ export const defaultFields: Components = [
     isType: (value) => typeof value === "number",
     component: NumberField,
     defaultValue: () => 0,
-  },
-  {
-    name: "email",
-    isType: (value, path) => typeof value === "string" && path === "email",
-    component: TextField,
-    defaultValue: (v: any) => {
-      if (v) {
-        if (
-          v.__proto__.constructor === Object ||
-          v.__proto__.constructor === Array
-        ) {
-          return JSON.stringify(v);
-        }
-      }
-      String(v || "");
-    },
-    parse: (value: string = "") => {
-      if (!(value.startsWith("{") && value.endsWith("}"))) {
-        throw "Is not JSON";
-      }
-      return value;
-    },
   },
   {
     name: "text",
