@@ -1,6 +1,6 @@
 {
-  "name": "react-json",
-  "version": "0.2.1",
+  "name": "react-json3",
+  "version": "0.3.1",
   "module": "./dist/index.js",
   "scripts": {
     "start": "react-scripts start",
@@ -14,26 +14,18 @@
     "forms",
     "json"
   ],
-  "author": "Javier Marquez",
+  "author": "Dmitry Zherebko",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/arqex/react-json/issues"
-  },
-  "dependencies": {
-    "freezer-js": "^0.5.2",
-    "parcel-bundler": "^1.12.4",
-    "react-json-tree": "^0.11.2",
-    "react-object-editor": "^0.1.2",
-    "ts-essentials": "^6.0.4",
-    "tsdx": "^0.13.2",
-    "typescript": "^3.8.3"
-  },
   "peerDependencies": {
     "react": "*"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0",
-    "react-scripts": "*"
+    "parcel-bundler": "^1.12.4",
+    "react-scripts": "*",
+    "ts-essentials": "^6.0.4",
+    "tsdx": "^0.13.2",
+    "typescript": "^3.8.3"
   },
   "browserslist": {
     "production": [
