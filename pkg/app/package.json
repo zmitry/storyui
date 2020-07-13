@@ -13,7 +13,10 @@
     "import-all.macro": "*",
     "react-error-boundary": "^1.2.5",
     "react-textarea-autosize": "^7.1.2",
-    "use-location-state": "^2.3.1"
+    "use-location-state": "^2.3.1",
+    "lodash": "*",
+    "use-subscription": "1.4.1",
+    "react-json3": "*"
   },
   "devDependencies": {
     "emotion": "9.2.4",
