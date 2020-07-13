@@ -1,1 +1,1 @@
-export * from "./Storyui";
+export * from "./storyui";
