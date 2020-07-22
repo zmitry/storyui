@@ -258,7 +258,6 @@ export function isStory(key) {
 }
 export function getApp({ stories, encodeKey, decodeKey }) {
   window.addEventListener("popstate", () => pushLocationEvent({}));
-
   const { story, iframe } = parse<{
     story: string;
     iframe?: any;
