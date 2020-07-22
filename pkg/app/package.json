@@ -1,8 +1,7 @@
 {
-  "name": "storyui",
-  "version": "1.1.4",
-  "main": "dist/storyui.esm.js",
-  "types": "./dist/index.d.ts",
+  "name": "uiplaybook",
+  "version": "1.1.8",
+  "main": "build/out.js",
   "author": "dmitry",
   "license": "MIT",
   "dependencies": {
@@ -10,13 +9,15 @@
     "@types/react": "^16.9.33",
     "@types/react-dom": "^16.9.6",
     "@types/react-textarea-autosize": "^4.3.5",
+    "esbuild": "^0.6.5",
     "import-all.macro": "*",
-    "react-error-boundary": "^1.2.5",
-    "react-textarea-autosize": "^7.1.2",
-    "use-location-state": "^2.3.1",
     "lodash": "*",
-    "use-subscription": "1.4.1",
-    "react-json3": "*"
+    "react-error-boundary": "^1.2.5",
+    "react-json3": "^0.3.3",
+    "react-textarea-autosize": "^7.1.2",
+    "tsdx": "^0.13.2",
+    "use-location-state": "^2.3.1",
+    "use-subscription": "^1.4.1"
   },
   "devDependencies": {
     "emotion": "9.2.4",

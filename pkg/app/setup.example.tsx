@@ -1,28 +1,20 @@
+import "./reset.css";
+import "./styles.css";
 import React, { Suspense } from "react";
 import ReactDOM from "react-dom";
-import { Provider } from "react-redux";
-import { store } from "setupStore";
-import { StylesWrapper } from "StylesWrapper";
-import { ReactQueryConfigProvider } from "react-query";
 import { getApp, isStory } from "libs/storyui";
-import { shortUrl } from "libs/storyui/shorturl";
 
 const AppWrapper = (children) => {
-  return (
-    <Suspense fallback={"Loading ..."}>
-      <Provider store={store}>
-        <ReactQueryConfigProvider config={{ refetchAllOnWindowFocus: false }}>
-          <StylesWrapper>{children}</StylesWrapper>
-        </ReactQueryConfigProvider>
-      </Provider>
-    </Suspense>
-  );
+  return <Suspense fallback={"Loading ..."}>{children}</Suspense>;
 };
 
 function parseDefaults(m, stories, parentKey) {
   const config = {
     ...m.default,
-    decorators: [AppWrapper].concat(m.default?.decorators).filter(Boolean),
+    decorator: [AppWrapper, ...(m.default?.decorators || [])].reduce(
+      (acc, el) => (ch) => el(acc(ch)),
+      (d) => d
+    ),
   };
   const storiesMapForFile = {
     ...m,
@@ -38,25 +30,18 @@ function parseDefaults(m, stories, parentKey) {
   return stories;
 }
 
-function loadStories(req) {
-  let m = new Map();
-  for (let key of req.keys()) {
-    parseDefaults(req(key), m, key);
-  }
-  return m;
-}
-
 const req = (require as any).context(".", true, /\.story\.*$/);
-const stories = loadStories(req);
 
 function render() {
-  const root = document.getElementById("root");
+  let stories = new Map();
+  for (let key of req.keys()) {
+    parseDefaults(req(key), stories, key);
+  }
   ReactDOM.render(
     getApp({
       stories,
-      ...shortUrl,
     }),
-    root
+    document.getElementById("root")
   );
 }
 

@@ -1,18 +1,14 @@
-import "./reset.css";
-import "./styles.css";
 import React, { useRef, useEffect, useMemo, Suspense } from "react";
 import { useSubscription } from "use-subscription";
 import { last } from "lodash";
 import { stringify, parse } from "./url";
 import { useArgs } from "./useArgs";
 import { Trie, dfs } from "./trie";
+import { shortUrl } from "./shorturl";
 
 //#region uri helpers
 function pushLocationEvent(data) {
   window.dispatchEvent(new CustomEvent("locationchange", { detail: data }));
-}
-function polyfillEvent() {
-  window.addEventListener("popstate", () => pushLocationEvent({}));
 }
 function parseQueryHash(hash) {
   return parse(hash.slice(1));
@@ -20,11 +16,9 @@ function parseQueryHash(hash) {
 function stringifyQueryHash(hash) {
   return "?" + stringify(hash);
 }
-function subscribeToLocationChange(w, fn) {
+function subscribeToLocationChange(w: Window, fn) {
   w.addEventListener("locationchange", fn);
-  return () => {
-    w.removeEventListener("locationchange", fn);
-  };
+  return () => w.removeEventListener("locationchange", fn);
 }
 function navigate(params, { replace = false, preserveParams = true } = {}) {
   const prevParams = preserveParams
@@ -51,14 +45,11 @@ function useHash() {
   const subscription = useMemo(
     () => ({
       getCurrentValue: () => window.location.search,
-      subscribe: (callback) => {
-        return subscribeToLocationChange(window, callback);
-      },
+      subscribe: (callback) => subscribeToLocationChange(window, callback),
     }),
     []
   );
-  const value = useSubscription(subscription);
-  return parseQueryHash(value);
+  return parseQueryHash(useSubscription(subscription));
 }
 function isUpperCase(str) {
   return str[0] === str[0].toUpperCase();
@@ -84,7 +75,7 @@ function StoryCase({
     values: params.props,
     parseProps,
   });
-  const wrapper = config.decorators.reduce((acc, el) => (ch) => el(acc(ch)));
+
   const getFullscreenLink = async (addProps) => {
     const stringifiedProps = addProps ? await stringifyProps(values) : null;
     return (
@@ -171,11 +162,15 @@ function StoryCase({
           <div className="tab props-editor">{input}</div>
         )}
       </div>
-      {wrapper(c)}
+      {config.decorator(c)}
     </div>
   );
 }
-function IframeController({ items, encodeKey, decodeKey }) {
+function IframeController({
+  items,
+  encodeKey = shortUrl.decodeKey,
+  decodeKey = shortUrl.encodeKey,
+}) {
   return (
     <div className="stack">
       <Suspense
@@ -201,9 +196,8 @@ function IframeController({ items, encodeKey, decodeKey }) {
 
 //#region controller app
 
-const SidePanel = React.memo(function SidePanel({ stories }: any) {
+const SidePanel = React.memo(function SidePanel({ stories, story }: any) {
   let res = [];
-  const params = useHash();
   dfs(stories, (node, depth, parentKey) => {
     // do not render top level folder which is ".""
     if (!parentKey) {
@@ -211,7 +205,7 @@ const SidePanel = React.memo(function SidePanel({ stories }: any) {
     }
     let key = node.key;
     const label = key.replace(parentKey, "").replace("/", "");
-    let className = params.story === key ? "selected" : "";
+    let className = story === key ? "selected" : "";
     if (node.end) {
       className += " side-label-item";
     } else {
@@ -245,9 +239,8 @@ const SidePanel = React.memo(function SidePanel({ stories }: any) {
   );
 });
 
-function AppIframe() {
+function AppIframe({ ...params }) {
   const ref = useRef<any>(null);
-  const params = useHash();
   const story = params.story;
   useEffect(() => {
     const w = ref.current?.contentWindow;
@@ -274,10 +267,12 @@ function AppIframe() {
 }
 
 function App({ stories }) {
+  const params = useHash();
+
   return (
     <div className="storyRoot">
-      <SidePanel stories={stories} />
-      <AppIframe />
+      <SidePanel stories={stories} {...params} />
+      <AppIframe {...params} />
     </div>
   );
 }
@@ -286,7 +281,7 @@ export function isStory(key) {
   return isUpperCase(key);
 }
 export function getApp({ stories, encodeKey, decodeKey }) {
-  polyfillEvent();
+  window.addEventListener("popstate", () => pushLocationEvent({}));
 
   const { story, iframe } = parse<{
     story: string;
