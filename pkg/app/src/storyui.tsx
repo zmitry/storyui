@@ -116,22 +116,6 @@ function StoryCase({
         >
           ⧉
         </a>
-        {config.figma && (
-          <a
-            title="design"
-            className={
-              "size1 icon-button " +
-              (params.sidepanelActive === id ? "active" : "")
-            }
-            onClick={(e) => {
-              navigate({
-                sidepanelActive: params.sidepanelActive === id ? null : id,
-              });
-            }}
-          >
-            ᚧ
-          </a>
-        )}
         <a
           title="props"
           className={
@@ -150,14 +134,6 @@ function StoryCase({
         </a>
       </div>
       <div className="hstack toolbar-panel">
-        {params.sidepanelActive === id && (
-          <iframe
-            className="tab"
-            title="figma"
-            src={config.figma}
-            height="500"
-          />
-        )}
         {params.activeInput === id && (
           <div className="tab props-editor">{input}</div>
         )}
@@ -288,6 +264,7 @@ export function getApp({ stories, encodeKey, decodeKey }) {
     iframe?: any;
   }>(window.location.search);
   const root = new Trie(stories);
+
   if (iframe) {
     let items = root.find(story || "")?.map((el) => [el.key, el.value]);
     return (
