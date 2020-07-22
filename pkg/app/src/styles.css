@@ -16,7 +16,7 @@ a {
   --size1: 1.2rem;
   --size2: calc(var(--size1) * 1.5);
   --primary-text: hsl(0, 0%, 30%);
-
+  height: 100vh;
   font-family: "Nunito Sans", -apple-system, ".SFNSText-Regular",
     "San Francisco", BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Helvetica,
     Arial, sans-serif !important;
@@ -50,7 +50,7 @@ a {
   height: auto;
   border-radius: 3px;
   background: white;
-  max-width: 140ch;
+  max-width: 200ch;
   justify-self: center;
   flex: 1;
   width: 100%;
@@ -104,6 +104,7 @@ a {
   /* text-decoration: underline; */
   background: #e1ebf4;
   border-radius: 4px;
+  color: #0078ff;
 }
 
 .toolbar-panel iframe {

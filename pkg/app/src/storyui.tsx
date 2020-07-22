@@ -289,7 +289,7 @@ export function getApp({ stories, encodeKey, decodeKey }) {
   }>(window.location.search);
   const root = new Trie(stories);
   if (iframe) {
-    let items = root.find(story)?.map((el) => [el.key, el.value]);
+    let items = root.find(story || "")?.map((el) => [el.key, el.value]);
     return (
       <IframeController
         encodeKey={encodeKey}

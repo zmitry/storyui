@@ -1,6 +1,6 @@
 {
   "name": "uiplaybook",
-  "version": "1.1.8",
+  "version": "1.1.11",
   "main": "build/out.js",
   "author": "dmitry",
   "license": "MIT",

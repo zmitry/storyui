@@ -4,7 +4,7 @@ build({
   entryPoints: ["./src/index.tsx"],
   minify: false,
   define: {
-    "process.env.NODE_ENV": "production",
+    "process.env.NODE_ENV": '"production"',
   },
   outfile: "./build/out.js",
   bundle: true,
