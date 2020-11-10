@@ -25,7 +25,7 @@
   <br />
   <br />
   <br />
-  <pre>yarn add <a href="https://www.npmjs.com/package/@zmitry/struct">storyui</a></pre>
+  <pre>yarn add <a href="https://www.npmjs.com/package/storyui">storyui</a></pre>
   <br />
   <br />
   <br />
