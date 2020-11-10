@@ -14,9 +14,6 @@
     <a href="https://www.npmjs.com/package/storyui">
        <img src="https://img.shields.io/npm/v/storyui.svg" alt="npm package" />
     </a>
-    <a href="https://www.npmjs.com/package/@zmitry/struct">
-      <img src="https://img.shields.io/npm/dm/storyui" alt="npm downloads" />
-    </a>
     <br />
     Ui for components story.</em></a>.
 
