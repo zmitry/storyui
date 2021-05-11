@@ -21,7 +21,7 @@
   },
   "devDependencies": {
     "emotion": "9.2.4",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "lodash-es": "^4.17.15",
     "tsdx": "^0.13.1"
   },
@@ -30,7 +30,7 @@
     "emotion": "9.2.4",
     "html-webpack-plugin": "*",
     "import-all.macro": "*",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "lodash-es": "^4.17.15",
     "react": "*",
     "react-dom": "*"
